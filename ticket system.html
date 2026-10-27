@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>i.tsupport · support & admin system</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+
+    body {
+      background: linear-gradient(135deg, #eef4fc 0%, #dfe9f3 100%);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* ================= LOGIN ================= */
+    .login-view {
+      max-width: 440px; width: 100%;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-radius: 2.5rem; padding: 2.5rem 2rem 2rem;
+      box-shadow: 0 30px 60px -20px rgba(0, 20, 45, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: flex; flex-direction: column; gap: 1.5rem;
+      animation: modalIn 0.35s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .login-logo { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
+    .login-logo .icon-circle {
+      width: 4.5rem; height: 4.5rem; border-radius: 50%;
+      background: #0b2b4a; display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: white; box-shadow: 0 12px 24px -8px #0b2b4a80;
+      margin-bottom: 0.3rem;
+    }
+    .login-logo h1 { font-size: 1.8rem; font-weight: 700; color: #0b2b4a; letter-spacing: -0.02em; }
+    .login-logo p { font-size: 0.85rem; color: #4b6f8c; }
+
+    .login-form { display: flex; flex-direction: column; gap: 1rem; }
+    .login-form .field-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .login-form label {
+      font-weight: 600; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.4px; color: #1f4b6e;
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .login-form label i { color: #2a6f97; font-size: 0.8rem; }
+    .login-form input, .login-form select {
+      padding: 0.85rem 1.1rem; border-radius: 1.2rem;
+      border: 1.5px solid #d9e4f0; background: #ffffff;
+      font-size: 0.95rem; transition: all 0.2s ease;
+      outline: none; color: #0e2c44;
+    }
+    .login-form input:focus, .login-form select:focus {
+      border-color: #2a6f97; box-shadow: 0 0 0 4px rgba(42, 111, 151, 0.12);
+    }
+    .login-btn {
+      margin-top: 0.4rem; border: none; padding: 1rem; border-radius: 2rem;
+      font-weight: 700; font-size: 1rem; background: #0b2b4a; color: white;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 0.6rem; transition: all 0.2s ease; box-shadow: 0 10px 22px -8px #0b2b4a;
+    }
+    .login-btn:hover { background: #123a5e; transform: translateY(-2px); box-shadow: 0 14px 28px -10px #0b2b4a; }
+    .login-error {
+      background: #fee9e6; color: #b13b2e; border: 1px solid #f5c6c0;
+      padding: 0.7rem 1rem; border-radius: 1rem; font-size: 0.8rem;
+      display: none; align-items: center; gap: 0.5rem;
+    }
+    .login-error.visible { display: flex; }
+    .demo-accounts {
+      background: #ffffffb3; border-radius: 1.5rem; padding: 0.9rem 1.1rem;
+      border: 1px solid #ffffff; font-size: 0.75rem; color: #1f4b6e;
+      display: flex; flex-direction: column; gap: 0.45rem;
+    }
+    .demo-accounts .demo-title {
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+      font-size: 0.65rem; color: #2a6f97;
+      display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.1rem;
+    }
+    .demo-account-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.25rem 0; border-bottom: 1px dashed #e2ecf5;
+    }
+    .demo-account-row:last-child { border-bottom: none; }
+    .demo-account-row .role { font-weight: 600; color: #0b2b4a; }
+    .demo-account-row .creds { color: #4b6f8c; font-family: monospace; font-size: 0.72rem; }
+
+    /* ================= DASHBOARD ================= */
+    .dashboard {
+      max-width: 1600px; width: 100%;
+      display: none; gap: 1.2rem;
+    }
+    .dashboard.active { display: grid; grid-template-columns: 1fr 340px; }
+    .dashboard.active.admin-mode { grid-template-columns: 1fr 400px; }
+
+    .main-panel {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-radius: 2rem; padding: 1.8rem;
+      box-shadow: 0 20px 40px -14px rgba(0, 20, 45, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: flex; flex-direction: column; gap: 1.2rem;
+    }
+
+    .user-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #ffffffc7; border-radius: 1.5rem; padding: 0.6rem 1.2rem;
+      border: 1px solid #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .user-bar .user-info {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.85rem; color: #0b2b4a;
+    }
+    .user-bar .user-info i { color: #2a6f97; }
+    .user-bar .user-role {
+      font-size: 0.65rem; background: #e2ecf5; color: #1f4b6e;
+      padding: 0.15rem 0.7rem; border-radius: 30px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .logout-btn {
+      background: #ffffff; border: 1px solid #cddae8; color: #b13b2e;
+      padding: 0.4rem 1rem; border-radius: 2rem; font-size: 0.75rem;
+      font-weight: 600; cursor: pointer; transition: 0.15s ease;
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .logout-btn:hover { background: #fee9e6; border-color: #f5c6c0; }
+
+    .header-area {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #cddae8; padding-bottom: 0.8rem;
+      flex-wrap: wrap; gap: 0.6rem;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 1.6rem; font-weight: 600; color: #0b2b4a;
+    }
+    .logo i {
+      background: #ffffffd9; padding: 0.4rem 0.6rem; border-radius: 1.2rem;
+      color: #2a6f97; box-shadow: 0 4px 10px rgba(0, 30, 60, 0.08);
+    }
+    .stats { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .stat-badge {
+      background: #ffffffd9; padding: 0.35rem 0.9rem; border-radius: 2rem;
+      font-size: 0.75rem; font-weight: 600; color: #1f4b6e;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02); border: 1px solid #e2ecf5;
+    }
+    .stat-badge i { margin-right: 0.25rem; color: #2a6f97; }
+
+    .create-ticket-card {
+      background: #ffffffcc; border-radius: 1.8rem; padding: 1.2rem;
+      border: 1px solid #ffffff;
+      box-shadow: inset 0 1px 4px #ffffff, 0 8px 16px -10px rgba(0, 0, 0, 0.1);
+    }
+    .create-ticket-card h3 {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-weight: 600; color: #0b2b4a; margin-bottom: 0.9rem; font-size: 1rem;
+    }
+    .create-ticket-card h3 i { color: #2a6f97; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    .field-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .field-group.full-width { grid-column: span 2; }
+    label {
+      font-weight: 600; font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.3px; color: #1f4b6e;
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    label i { font-size: 0.75rem; color: #2a6f97; }
+    input, select, textarea {
+      padding: 0.7rem 0.9rem; border-radius: 1.2rem;
+      border: 1.5px solid #d9e4f0; background: #ffffff;
+      font-size: 0.85rem; transition: all 0.2s ease;
+      outline: none; color: #0e2c44; resize: vertical;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #2a6f97; box-shadow: 0 0 0 4px rgba(42, 111, 151, 0.12);
+    }
+    textarea { min-height: 60px; }
+    .form-actions {
+      grid-column: span 2; display: flex; justify-content: flex-end;
+      gap: 0.6rem; margin-top: 0.2rem;
+    }
+    .btn {
+      border: none; padding: 0.7rem 1.5rem; border-radius: 2rem;
+      font-weight: 600; font-size: 0.8rem; display: inline-flex;
+      align-items: center; justify-content: center; gap: 0.4rem;
+      cursor: pointer; transition: all 0.2s ease;
+      background: #ffffff; color: #1f4b6e;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .btn-primary { background: #0b2b4a; color: white; box-shadow: 0 8px 18px -6px #0b2b4a80; }
+    .btn-primary:hover { background: #123a5e; transform: translateY(-2px); }
+    .btn-secondary { background: #eef3f9; color: #1f4b6e; border: 1px solid #cddae8; }
+    .btn-secondary:hover { background: #e2eaf3; }
+    .btn-danger { background: #fee9e6; color: #b13b2e; border: 1px solid #f5c6c0; }
+    .btn-danger:hover { background: #fdd9d4; }
+
+    .list-header {
+      display: flex; justify-content: space-between; align-items: center; margin-top: 0.2rem;
+    }
+    .list-header h3 {
+      font-size: 1.1rem; color: #0b2b4a;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .list-header h3 i { color: #2a6f97; }
+
+    .tickets-scroll {
+      display: flex; flex-direction: column; gap: 0.6rem;
+      max-height: 480px; overflow-y: auto; padding-right: 6px;
+    }
+    .tickets-scroll::-webkit-scrollbar { width: 5px; }
+    .tickets-scroll::-webkit-scrollbar-thumb { background: #a6c0d9; border-radius: 10px; }
+
+    .ticket-item {
+      background: #ffffff; border-radius: 1.5rem; padding: 0.9rem 1.1rem;
+      display: flex; justify-content: space-between; align-items: center; gap: 0.6rem;
+      border-left: 6px solid #2a6f97;
+      box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.1);
+      transition: 0.15s ease;
+    }
+    .ticket-item.resolved { border-left-color: #1e6e4b; opacity: 0.8; }
+    .ticket-item.resolved .ticket-subject { text-decoration: line-through; color: #4b6f8c; }
+    .ticket-item.pending { border-left-color: #d4a017; background: #fffcf5; }
+    .ticket-item.pending .ticket-subject { color: #7a5b0e; }
+
+    .ticket-info { flex: 1; display: flex; flex-direction: column; gap: 0.15rem; }
+    .ticket-subject {
+      font-weight: 700; color: #0b2b4a; font-size: 0.9rem;
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .priority-tag {
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      padding: 0.1rem 0.5rem; border-radius: 20px;
+      background: #eef3f9; color: #1f4b6e; border: 1px solid #cddae8;
+    }
+    .priority-high { background: #fee9e6; color: #b13b2e; border-color: #f5c6c0; }
+    .priority-medium { background: #fff1db; color: #a96618; border-color: #f7ddb2; }
+    .priority-low { background: #e4f2e9; color: #1e6e4b; border-color: #b9dfcb; }
+
+    .status-tag {
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      padding: 0.1rem 0.5rem; border-radius: 20px;
+      border: 1px solid #cddae8; background: #eef3f9; color: #1f4b6e;
+    }
+    .status-pending { background: #fff1db; color: #a96618; border-color: #f7ddb2; }
+    .status-open { background: #e2ecf5; color: #1f4b6e; border-color: #cddae8; }
+    .status-assigned { background: #e8e0ff; color: #4b2e8c; border-color: #d6c7f0; }
+    .status-resolved { background: #e4f2e9; color: #1e6e4b; border-color: #b9dfcb; }
+
+    .tenurity-info {
+      font-size: 0.65rem; color: #a96618;
+      display: inline-flex; align-items: center; gap: 0.2rem;
+      background: #fff7e6; padding: 0.05rem 0.5rem;
+      border-radius: 30px; border: 1px solid #f7ddb2; font-weight: 600;
+    }
+
+    .ticket-meta {
+      font-size: 0.7rem; color: #4b6f8c;
+      display: flex; gap: 0.8rem; flex-wrap: wrap;
+    }
+    .ticket-meta i { margin-right: 0.15rem; color: #2a6f97; font-size: 0.65rem; }
+
+    .ticket-actions { display: flex; gap: 0.2rem; flex-wrap: wrap; }
+    .btn-icon {
+      background: transparent; border: none; width: 1.9rem; height: 1.9rem;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      color: #7a9bb9; cursor: pointer; transition: 0.15s ease; font-size: 0.85rem;
+    }
+    .btn-icon:hover { background: #eef3f9; color: #1f4b6e; transform: scale(1.08); }
+    .btn-icon.resolve:hover { background: #e4f2e9; color: #1e6e4b; }
+    .btn-icon.delete:hover { background: #fee9e6; color: #b13b2e; }
+    .btn-icon.reply:hover { background: #e2ecf5; color: #1f4b6e; }
+    .btn-icon.edit:hover { background: #fff1db; color: #a96618; }
+    .btn-icon.assign:hover { background: #e8e0ff; color: #4b2e8c; }
+    .btn-icon.grab:hover { background: #e4f2e9; color: #1e6e4b; }
+
+    .resolved-tag {
+      font-size: 0.6rem; background: #d4e6f5; color: #0e4970;
+      padding: 0.05rem 0.5rem; border-radius: 30px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 0.15rem;
+    }
+    .assigned-tag {
+      font-size: 0.6rem; background: #e8e0ff; color: #4b2e8c;
+      padding: 0.05rem 0.5rem; border-radius: 30px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 0.15rem;
+    }
+
+    .empty-msg {
+      text-align: center; padding: 1.5rem; color: #6f8fa8;
+      background: #ffffffc7; border-radius: 1.5rem;
+      border: 1px dashed #b8cee0; font-size: 0.85rem;
+    }
+
+    /* ================= SUPPORT PANEL ================= */
+    .support-panel {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-radius: 2rem; padding: 1.5rem 1.2rem;
+      box-shadow: 0 20px 40px -14px rgba(0, 20, 45, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: flex; flex-direction: column; gap: 1rem;
+      max-height: 92vh; overflow-y: auto;
+    }
+    .support-panel::-webkit-scrollbar { width: 5px; }
+    .support-panel::-webkit-scrollbar-thumb { background: #a6c0d9; border-radius: 10px; }
+
+    .agent-header {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 1.2rem; font-weight: 600; color: #0b2b4a;
+      border-bottom: 1px solid #cddae8; padding-bottom: 0.7rem;
+    }
+    .agent-header i {
+      background: #2a6f97; color: white; padding: 0.45rem;
+      border-radius: 1rem; font-size: 1rem;
+    }
+    .agent-profile {
+      display: flex; align-items: center; gap: 0.7rem;
+      background: #ffffffd9; padding: 0.7rem 0.9rem;
+      border-radius: 1.5rem; border: 1px solid #ffffff;
+    }
+    .agent-avatar {
+      width: 2.4rem; height: 2.4rem; border-radius: 50%;
+      background: #0b2b4a; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem;
+    }
+    .agent-info { display: flex; flex-direction: column; }
+    .agent-name { font-weight: 700; color: #0b2b4a; font-size: 0.9rem; }
+    .agent-status {
+      font-size: 0.7rem; color: #1e6e4b;
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    .agent-status i { font-size: 0.5rem; }
+
+    .agent-queue { display: flex; flex-direction: column; gap: 0.6rem; }
+    .queue-header {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8rem; font-weight: 600; color: #1f4b6e;
+    }
+    .queue-list {
+      display: flex; flex-direction: column; gap: 0.5rem;
+      max-height: 260px; overflow-y: auto; padding-right: 4px;
+    }
+    .queue-list::-webkit-scrollbar { width: 4px; }
+    .queue-list::-webkit-scrollbar-thumb { background: #a6c0d9; border-radius: 10px; }
+
+    .queue-item {
+      background: #ffffff; border-radius: 1.2rem; padding: 0.7rem 0.9rem;
+      display: flex; flex-direction: column; gap: 0.2rem;
+      border: 1px solid #e2ecf5; cursor: pointer;
+      transition: 0.15s ease; box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.05);
+    }
+    .queue-item:hover {
+      background: #f0f6fe; border-color: #b8cee0; transform: translateY(-1px);
+    }
+    .queue-item.pending { border-left: 4px solid #d4a017; background: #fffcf5; }
+
+    .queue-item .q-subject {
+      font-weight: 700; font-size: 0.8rem; color: #0b2b4a;
+      display: flex; justify-content: space-between; align-items: center; gap: 0.4rem;
+    }
+    .queue-item .q-meta {
+      font-size: 0.65rem; color: #4b6f8c;
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .queue-item .q-meta i { margin-right: 0.1rem; font-size: 0.55rem; color: #2a6f97; }
+
+    .assign-btn {
+      background: #eef3f9; border: 1px solid #cddae8; color: #1f4b6e;
+      font-size: 0.65rem; font-weight: 600; padding: 0.2rem 0.7rem;
+      border-radius: 30px; cursor: pointer; transition: 0.15s ease;
+      display: inline-flex; align-items: center; gap: 0.2rem;
+    }
+    .assign-btn:hover { background: #0b2b4a; color: white; border-color: #0b2b4a; }
+    .assign-btn.grab { background: #e4f2e9; color: #1e6e4b; border-color: #b9dfcb; }
+    .assign-btn.grab:hover { background: #1e6e4b; color: white; border-color: #1e6e4b; }
+
+    /* ================= ADMIN PANEL ================= */
+    .admin-panel {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-radius: 2rem; padding: 1.5rem 1.2rem;
+      box-shadow: 0 20px 40px -14px rgba(0, 20, 45, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: flex; flex-direction: column; gap: 1rem;
+      max-height: 92vh; overflow-y: auto;
+    }
+    .admin-panel::-webkit-scrollbar { width: 5px; }
+    .admin-panel::-webkit-scrollbar-thumb { background: #a6c0d9; border-radius: 10px; }
+
+    .admin-header {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 1.2rem; font-weight: 600; color: #0b2b4a;
+      border-bottom: 1px solid #cddae8; padding-bottom: 0.7rem;
+    }
+    .admin-header i {
+      background: #0b2b4a; color: white; padding: 0.45rem;
+      border-radius: 1rem; font-size: 1rem;
+    }
+
+    .admin-tabs {
+      display: flex; gap: 0.3rem; flex-wrap: wrap;
+      background: #f5f9ff; border-radius: 1.2rem; padding: 0.3rem;
+      border: 1px solid #e2ecf5;
+    }
+    .admin-tab {
+      flex: 1; padding: 0.5rem 0.5rem; border-radius: 1rem; border: none;
+      background: transparent; font-size: 0.68rem; font-weight: 600;
+      color: #1f4b6e; cursor: pointer; transition: 0.15s ease;
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.25rem; white-space: nowrap;
+    }
+    .admin-tab:hover { background: #e2ecf5; }
+    .admin-tab.active { background: #0b2b4a; color: white; }
+
+    .admin-category { display: none; flex-direction: column; gap: 0.9rem; }
+    .admin-category.active { display: flex; }
+
+    .category-title {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.4px; color: #2a6f97;
+      display: flex; align-items: center; gap: 0.35rem;
+      padding-bottom: 0.4rem; border-bottom: 1px solid #e2ecf5;
+    }
+
+    .filter-group { display: flex; flex-direction: column; gap: 0.2rem; }
+    .filter-group label { font-size: 0.65rem; color: #1f4b6e; }
+    .filter-group select, .filter-group input {
+      padding: 0.6rem 0.9rem; border-radius: 1rem;
+      border: 1.5px solid #d9e4f0; background: #ffffff;
+      font-size: 0.8rem; width: 100%;
+    }
+
+    .action-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .action-buttons .btn {
+      flex: 1 0 auto; padding: 0.55rem 0.8rem;
+      font-size: 0.72rem; border-radius: 1.5rem;
+    }
+
+    .admin-stats {
+      background: #ffffffb3; border-radius: 1.5rem; padding: 0.9rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+      font-size: 0.8rem; color: #1f4b6e; border: 1px solid #ffffff;
+    }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; }
+    .stat-row span:first-child i { width: 1.2rem; color: #2a6f97; }
+    .stat-value {
+      font-weight: 700; background: #e2ecf5; padding: 0.1rem 0.7rem;
+      border-radius: 30px; font-size: 0.75rem;
+    }
+
+    /* ================= DASHBOARD TAB (new) ================= */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+    .dash-card {
+      background: #ffffff;
+      border-radius: 1.2rem;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid #e2ecf5;
+      display: flex; flex-direction: column; gap: 0.2rem;
+      transition: 0.15s ease;
+      box-shadow: 0 2px 8px -4px rgba(0,0,0,0.05);
+    }
+    .dash-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px -6px rgba(0,30,60,0.15); }
+    .dash-card .dc-label {
+      font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.4px;
+      color: #2a6f97; font-weight: 700;
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    .dash-card .dc-value {
+      font-size: 1.3rem; font-weight: 700; color: #0b2b4a;
+    }
+    .dash-card .dc-sub {
+      font-size: 0.65rem; color: #4b6f8c;
+    }
+    .dash-card.highlight-high { border-left: 3px solid #b13b2e; }
+    .dash-card.highlight-pending { border-left: 3px solid #d4a017; }
+    .dash-card.highlight-resolved { border-left: 3px solid #1e6e4b; }
+    .dash-card.highlight-open { border-left: 3px solid #2a6f97; }
+
+    .dash-breakdown {
+      display: flex; flex-direction: column; gap: 0.4rem;
+      background: #f5f9ff; border-radius: 1.2rem; padding: 0.8rem 0.9rem;
+      border: 1px solid #e2ecf5;
+    }
+    .dash-breakdown-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.75rem; color: #1f4b6e;
+    }
+    .dash-breakdown-row i { width: 1.1rem; color: #2a6f97; font-size: 0.7rem; }
+    .dash-breakdown-row .bcount {
+      font-weight: 700; background: #e2ecf5; padding: 0.05rem 0.6rem;
+      border-radius: 30px; font-size: 0.7rem;
+    }
+    .dash-bar {
+      height: 4px; border-radius: 10px; background: #e2ecf5; margin-top: 0.15rem;
+      overflow: hidden;
+    }
+    .dash-bar span { display: block; height: 100%; border-radius: 10px; }
+
+    .dash-activity {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      max-height: 220px; overflow-y: auto;
+      background: #f5f9ff; border-radius: 1.2rem; padding: 0.6rem 0.8rem;
+      border: 1px solid #e2ecf5;
+    }
+    .dash-activity::-webkit-scrollbar { width: 4px; }
+    .dash-activity::-webkit-scrollbar-thumb { background: #a6c0d9; border-radius: 10px; }
+    .dash-activity-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.72rem; color: #1f4b6e;
+      padding: 0.3rem 0; border-bottom: 1px dashed #e2ecf5;
+    }
+    .dash-activity-item:last-child { border-bottom: none; }
+    .dash-activity-item i { color: #2a6f97; font-size: 0.7rem; }
+    .dash-activity-item .act-time { margin-left: auto; font-size: 0.6rem; color: #86a5bf; white-space: nowrap; }
+
+    /* ================= MODALS ================= */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0, 20, 40, 0.3);
+      backdrop-filter: blur(4px); display: none; align-items: center;
+      justify-content: center; z-index: 1000; padding: 1rem;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #ffffff; border-radius: 2rem; padding: 1.8rem;
+      max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.3);
+      border: 1px solid #ffffff; display: flex; flex-direction: column;
+      gap: 1rem; animation: modalIn 0.2s ease;
+    }
+    .modal.modal-wide { max-width: 780px; }
+    .modal h3 {
+      display: flex; align-items: center; gap: 0.5rem;
+      color: #0b2b4a; font-size: 1.1rem;
+    }
+    .modal h3 i { color: #2a6f97; }
+    .modal-ticket-info {
+      background: #f5f9ff; padding: 0.8rem 1rem; border-radius: 1rem;
+      font-size: 0.8rem; color: #1f4b6e;
+      border: 1px solid #e2ecf5; line-height: 1.5;
+    }
+    .modal textarea, .modal input, .modal select {
+      width: 100%; padding: 0.8rem 1rem; border-radius: 1.2rem;
+      border: 1.5px solid #d9e4f0; font-size: 0.9rem; resize: vertical;
+    }
+    .modal textarea { min-height: 100px; }
+    .modal .field-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.3rem; }
+
+    .user-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .user-table th, .user-table td {
+      padding: 0.6rem 0.5rem; text-align: left; border-bottom: 1px solid #e2ecf5;
+    }
+    .user-table th {
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.4px;
+      color: #2a6f97; font-weight: 700;
+    }
+    .user-table td { color: #0b2b4a; }
+    .user-table .role-pill {
+      background: #e2ecf5; color: #1f4b6e; font-size: 0.6rem;
+      font-weight: 700; padding: 0.1rem 0.5rem;
+      border-radius: 30px; text-transform: uppercase;
+    }
+    .reset-btn {
+      background: #fff1db; border: 1px solid #f7ddb2; color: #a96618;
+      font-size: 0.65rem; font-weight: 600; padding: 0.25rem 0.7rem;
+      border-radius: 30px; cursor: pointer; transition: 0.15s ease;
+      display: inline-flex; align-items: center; gap: 0.25rem;
+    }
+    .reset-btn:hover { background: #ffe9c7; border-color: #f0c47a; }
+    .reset-all-btn {
+      background: #fee9e6; border: 1px solid #f5c6c0; color: #b13b2e;
+      font-size: 0.7rem; font-weight: 700; padding: 0.45rem 0.9rem;
+      border-radius: 30px; cursor: pointer; transition: 0.15s ease;
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      width: 100%; justify-content: center;
+    }
+    .reset-all-btn:hover { background: #fdd9d4; }
+
+    .report-config-row { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+    .report-config-row .field-group { flex: 1 0 140px; }
+    .report-tab-row { display: flex; gap: 0.4rem; margin-bottom: 0.4rem; }
+    .report-tab {
+      flex: 1; padding: 0.55rem 0.8rem; border-radius: 1.2rem;
+      border: 1.5px solid #d9e4f0; background: #ffffff; font-size: 0.78rem;
+      font-weight: 600; color: #1f4b6e; cursor: pointer; transition: 0.15s ease;
+      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+    }
+    .report-tab.active { background: #0b2b4a; color: white; border-color: #0b2b4a; }
+    .report-tab:hover:not(.active) { background: #eef3f9; }
+
+    .report-summary-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem; margin: 0.3rem 0;
+    }
+    .report-summary-card {
+      background: #f5f9ff; border: 1px solid #e2ecf5; border-radius: 1rem;
+      padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.15rem;
+    }
+    .report-summary-card .rsc-label {
+      font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.4px;
+      color: #2a6f97; font-weight: 700;
+    }
+    .report-summary-card .rsc-value { font-size: 1.1rem; font-weight: 700; color: #0b2b4a; }
+    .report-table-wrap {
+      max-height: 300px; overflow: auto; border: 1px solid #e2ecf5; border-radius: 1rem;
+    }
+    .report-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+    .report-table th, .report-table td {
+      padding: 0.45rem 0.6rem; text-align: left;
+      border-bottom: 1px solid #eef3f9; white-space: nowrap;
+    }
+    .report-table th {
+      position: sticky; top: 0; background: #eef3f9; font-size: 0.6rem;
+      text-transform: uppercase; letter-spacing: 0.3px; color: #2a6f97; font-weight: 700;
+    }
+    .report-table tbody tr:hover { background: #f7fbff; }
+    .report-empty { text-align: center; padding: 1.2rem; color: #6f8fa8; font-size: 0.8rem; }
+
+    .toast-msg {
+      position: fixed; bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0b2b4a; color: white; padding: 0.8rem 2rem;
+      border-radius: 3rem; font-weight: 500;
+      box-shadow: 0 12px 24px -8px #0b2b4a80;
+      opacity: 0; transition: 0.3s ease; pointer-events: none;
+      z-index: 2000; font-size: 0.85rem;
+    }
+    .toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .report-print { display: none; }
+    @media print {
+      body * { visibility: hidden; }
+      .report-print, .report-print * { visibility: visible; }
+      .report-print {
+        display: block !important; position: absolute; inset: 0;
+        padding: 2rem; background: white; color: black; font-family: Arial, sans-serif;
+      }
+      .report-print h1 { font-size: 1.6rem; margin-bottom: 0.3rem; }
+      .report-print h2 { font-size: 1rem; margin: 1rem 0 0.4rem; color: #333; }
+      .report-print .report-meta { font-size: 0.8rem; color: #555; margin-bottom: 1.2rem; }
+      .report-print table { width: 100%; border-collapse: collapse; font-size: 0.72rem; margin-bottom: 1rem; }
+      .report-print th, .report-print td { border: 1px solid #999; padding: 0.4rem 0.5rem; text-align: left; }
+      .report-print th { background: #eee; }
+      .report-print .summary-list { font-size: 0.8rem; margin-bottom: 0.8rem; }
+      .report-print .summary-list li { margin-bottom: 0.2rem; }
+    }
+
+    @media (max-width: 1200px) {
+      .dashboard.active, .dashboard.active.admin-mode { grid-template-columns: 1fr; }
+      .support-panel, .admin-panel { max-height: none; }
+    }
+    @media (max-width: 850px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .field-group.full-width { grid-column: span 1; }
+      .form-actions { grid-column: span 1; flex-direction: column; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= LOGIN VIEW ================= -->
+  <div class="login-view" id="loginView">
+    <div class="login-logo">
+      <div class="icon-circle"><i class="fas fa-headset"></i></div>
+      <h1>i.tsupport</h1>
+      <p>Sign in to manage support tickets</p>
+    </div>
+    <div class="login-error" id="loginError">
+      <i class="fas fa-exclamation-circle"></i>
+      <span id="loginErrorText">Invalid credentials. Please try again.</span>
+    </div>
+    <form class="login-form" id="loginForm">
+      <div class="field-group">
+        <label><i class="fas fa-user-tag"></i> Role</label>
+        <select id="loginRole">
+          <option value="">— select role —</option>
+          <option value="admin">Admin</option>
+          <option value="tech1">Tech 1</option>
+          <option value="tech2">Tech 2</option>
+          <option value="tech3">Tech 3</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-user"></i> Username</label>
+        <input type="text" id="loginUsername" placeholder="Enter username" autocomplete="username" required>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt"></i> Sign in</button>
+    </form>
+    <div class="demo-accounts">
+      <div class="demo-title"><i class="fas fa-key"></i> Demo credentials</div>
+      <div class="demo-account-row"><span class="role">Admin</span><span class="creds">admin / admin123</span></div>
+      <div class="demo-account-row"><span class="role">Tech 1</span><span class="creds">tech1 / tech123</span></div>
+      <div class="demo-account-row"><span class="role">Tech 2</span><span class="creds">tech2 / tech123</span></div>
+      <div class="demo-account-row"><span class="role">Tech 3</span><span class="creds">tech3 / tech123</span></div>
+    </div>
+  </div>
+
+  <!-- ================= DASHBOARD ================= -->
+  <div class="dashboard" id="dashboardView">
+    <div class="main-panel">
+      <div class="user-bar">
+        <div class="user-info">
+          <i class="fas fa-user-circle"></i>
+          <span id="currentUserName">—</span>
+          <span class="user-role" id="currentUserRole">—</span>
+        </div>
+        <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+
+      <div class="header-area">
+        <div class="logo"><i class="fas fa-headset"></i> i.tsupport</div>
+        <div class="stats">
+          <span class="stat-badge"><i class="fas fa-ticket-alt"></i> <span id="totalCount">0</span> total</span>
+          <span class="stat-badge"><i class="fas fa-circle-check"></i> <span id="resolvedCount">0</span> resolved</span>
+          <span class="stat-badge"><i class="fas fa-spinner"></i> <span id="openCount">0</span> open</span>
+          <span class="stat-badge"><i class="fas fa-clock"></i> <span id="pendingCount">0</span> pending</span>
+          <span class="stat-badge"><i class="fas fa-user-check"></i> <span id="assignedCount">0</span> assigned</span>
+        </div>
+      </div>
+
+      <div class="create-ticket-card">
+        <h3><i class="fas fa-plus-circle"></i> New support ticket</h3>
+        <form id="ticketForm">
+          <div class="form-grid">
+            <div class="field-group">
+              <label><i class="fas fa-user"></i> Requester</label>
+              <input type="text" id="requester" placeholder="email@company.com" required>
+            </div>
+            <div class="field-group">
+              <label><i class="fas fa-heading"></i> Subject</label>
+              <input type="text" id="subject" placeholder="Short summary" required>
+            </div>
+            <div class="field-group full-width">
+              <label><i class="fas fa-align-left"></i> Description</label>
+              <textarea id="description" placeholder="Detailed issue description..." required></textarea>
+            </div>
+            <div class="field-group">
+              <label><i class="fas fa-flag"></i> Priority</label>
+              <select id="priority">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="resetBtn"><i class="fas fa-undo-alt"></i> Clear</button>
+              <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Create</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="list-header">
+        <h3><i class="fas fa-clipboard-list"></i> All tickets</h3>
+        <span class="stat-badge" id="visibleCount">0 shown</span>
+      </div>
+      <div class="tickets-scroll" id="ticketsContainer"></div>
+    </div>
+
+    <!-- SUPPORT PANEL (techs only) -->
+    <div class="support-panel" id="supportPanel" style="display: none;">
+      <div class="agent-header"><i class="fas fa-headset"></i> Support agent</div>
+      <div class="agent-profile">
+        <div class="agent-avatar" id="agentAvatar">AR</div>
+        <div class="agent-info">
+          <span class="agent-name" id="agentNameDisplay">—</span>
+          <span class="agent-status"><i class="fas fa-circle"></i> online · ready</span>
+        </div>
+      </div>
+      <div class="agent-queue">
+        <div class="queue-header">
+          <span><i class="fas fa-inbox"></i> Unassigned queue</span>
+          <span class="stat-badge" id="queueCount">0</span>
+        </div>
+        <div class="queue-list" id="queueList"></div>
+      </div>
+      <div class="agent-queue">
+        <div class="queue-header">
+          <span><i class="fas fa-user-check"></i> My tickets</span>
+          <span class="stat-badge" id="myCount">0</span>
+        </div>
+        <div class="queue-list" id="myTicketsList"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL with DASHBOARD tab -->
+    <div class="admin-panel" id="adminPanel" style="display: none;">
+      <div class="admin-header"><i class="fas fa-user-shield"></i> Admin panel</div>
+
+      <!-- Category tabs (Dashboard first) -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="dashboard"><i class="fas fa-gauge-high"></i> Dashboard</button>
+        <button class="admin-tab" data-tab="filters"><i class="fas fa-filter"></i> Filters</button>
+        <button class="admin-tab" data-tab="actions"><i class="fas fa-tools"></i> Actions</button>
+        <button class="admin-tab" data-tab="management"><i class="fas fa-cog"></i> Manage</button>
+        <button class="admin-tab" data-tab="reports"><i class="fas fa-chart-column"></i> Reports</button>
+      </div>
+
+      <!-- TAB: Dashboard (NEW) -->
+      <div class="admin-category active" id="cat-dashboard">
+        <div class="category-title"><i class="fas fa-gauge-high"></i> Live overview</div>
+
+        <div class="dash-grid">
+          <div class="dash-card highlight-open">
+            <span class="dc-label"><i class="fas fa-spinner"></i> Open</span>
+            <span class="dc-value" id="dashOpen">0</span>
+            <span class="dc-sub">Awaiting pickup</span>
+          </div>
+          <div class="dash-card highlight-pending">
+            <span class="dc-label"><i class="fas fa-clock"></i> Pending</span>
+            <span class="dc-value" id="dashPending">0</span>
+            <span class="dc-sub">Past tenure limit</span>
+          </div>
+          <div class="dash-card highlight-high">
+            <span class="dc-label"><i class="fas fa-flag"></i> High priority</span>
+            <span class="dc-value" id="dashHigh">0</span>
+            <span class="dc-sub">Unresolved critical</span>
+          </div>
+          <div class="dash-card highlight-resolved">
+            <span class="dc-label"><i class="fas fa-circle-check"></i> Resolved</span>
+            <span class="dc-value" id="dashResolved">0</span>
+            <span class="dc-sub">Completed tickets</span>
+          </div>
+        </div>
+
+        <div class="category-title" style="margin-top:0.3rem;"><i class="fas fa-chart-simple"></i> Status breakdown</div>
+        <div class="dash-breakdown" id="dashBreakdown">
+          <!-- filled by JS -->
+        </div>
+
+        <div class="category-title" style="margin-top:0.3rem;"><i class="fas fa-list-check"></i> Priority breakdown</div>
+        <div class="dash-breakdown" id="dashPriorityBreakdown">
+          <!-- filled by JS -->
+        </div>
+
+        <div class="category-title" style="margin-top:0.3rem;"><i class="fas fa-users"></i> Technician load</div>
+        <div class="dash-breakdown" id="dashTechLoad">
+          <!-- filled by JS -->
+        </div>
+
+        <div class="category-title" style="margin-top:0.3rem;"><i class="fas fa-clock-rotate-left"></i> Recent activity</div>
+        <div class="dash-activity" id="dashActivity">
+          <!-- filled by JS -->
+        </div>
+
+        <button class="btn btn-secondary" id="refreshDashboardBtn" style="width:100%; margin-top:0.3rem;">
+          <i class="fas fa-rotate"></i> Refresh dashboard
+        </button>
+        <button class="btn btn-primary" id="dashGoReportsBtn" style="width:100%;">
+          <i class="fas fa-chart-column"></i> Open reports
+        </button>
+      </div>
+
+      <!-- TAB: Filters -->
+      <div class="admin-category" id="cat-filters">
+        <div class="category-title"><i class="fas fa-filter"></i> Filter tickets</div>
+        <div class="filter-group">
+          <label><i class="fas fa-filter"></i> Status</label>
+          <select id="filterStatus">
+            <option value="all">All tickets</option>
+            <option value="open">Open only</option>
+            <option value="pending">Pending only</option>
+            <option value="resolved">Resolved only</option>
+            <option value="assigned">Assigned only</option>
+            <option value="unassigned">Unassigned only</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label><i class="fas fa-search"></i> Search</label>
+          <input type="text" id="searchInput" placeholder="Subject, requester, ID...">
+        </div>
+        <div class="filter-group">
+          <label><i class="fas fa-flag"></i> Priority</label>
+          <select id="filterPriority">
+            <option value="all">All priorities</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" id="clearFiltersBtn" style="width:100%; margin-top:0.2rem;">
+          <i class="fas fa-undo-alt"></i> Clear filters
+        </button>
+      </div>
+
+      <!-- TAB: Actions -->
+      <div class="admin-category" id="cat-actions">
+        <div class="category-title"><i class="fas fa-tools"></i> Bulk actions</div>
+        <div class="action-buttons">
+          <button class="btn btn-secondary" id="resolveAllOpen"><i class="fas fa-check-double"></i> Resolve all open</button>
+          <button class="btn btn-danger" id="deleteResolved"><i class="fas fa-trash-can"></i> Delete resolved</button>
+        </div>
+        <div class="category-title" style="margin-top:0.4rem;"><i class="fas fa-database"></i> Data</div>
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="printReportBtn"><i class="fas fa-print"></i> Print all tickets</button>
+        </div>
+      </div>
+
+      <!-- TAB: Management -->
+      <div class="admin-category" id="cat-management">
+        <div class="category-title"><i class="fas fa-key"></i> Password</div>
+        <div class="action-buttons">
+          <button class="btn btn-secondary" id="changePasswordBtn"><i class="fas fa-key"></i> Change my password</button>
+        </div>
+        <div class="category-title" style="margin-top:0.4rem;"><i class="fas fa-users"></i> Users</div>
+        <div class="action-buttons">
+          <button class="btn btn-secondary" id="createUserBtn"><i class="fas fa-user-plus"></i> Create user</button>
+          <button class="btn btn-secondary" id="manageUsersBtn"><i class="fas fa-users-gear"></i> Manage users</button>
+        </div>
+      </div>
+
+      <!-- TAB: Reports -->
+      <div class="admin-category" id="cat-reports">
+        <div class="category-title"><i class="fas fa-chart-column"></i> Reports</div>
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="reportCenterBtn" style="width:100%;">
+            <i class="fas fa-chart-column"></i> Open report center
+          </button>
+        </div>
+        <div class="action-buttons" style="margin-top:0.4rem;">
+          <button class="btn btn-secondary" id="printReportBtn2" style="width:100%;">
+            <i class="fas fa-print"></i> Print all tickets
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats always visible -->
+      <div class="admin-stats" style="margin-top:0.4rem;">
+        <div class="stat-row"><span><i class="fas fa-chart-simple"></i> Total</span> <span class="stat-value" id="adminTotal">0</span></div>
+        <div class="stat-row"><span><i class="fas fa-hourglass-half"></i> Open</span> <span class="stat-value" id="adminOpen">0</span></div>
+        <div class="stat-row"><span><i class="fas fa-clock"></i> Pending</span> <span class="stat-value" id="adminPending">0</span></div>
+        <div class="stat-row"><span><i class="fas fa-circle-check"></i> Resolved</span> <span class="stat-value" id="adminResolved">0</span></div>
+        <div class="stat-row"><span><i class="fas fa-user-check"></i> Assigned</span> <span class="stat-value" id="adminAssigned">0</span></div>
+        <div class="stat-row"><span><i class="fas fa-flag"></i> High priority</span> <span class="stat-value" id="adminHigh">0</span></div>
+        <div class="stat-row"><span><i class="fas fa-users"></i> Users</span> <span class="stat-value" id="adminUserCount">0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPLY MODAL -->
+  <div class="modal-overlay" id="replyModal">
+    <div class="modal">
+      <h3><i class="fas fa-reply"></i> Reply to ticket</h3>
+      <div class="modal-ticket-info" id="replyTicketInfo"></div>
+      <textarea id="replyMessage" placeholder="Type your response to the requester..."></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="closeReplyModalBtn">Cancel</button>
+        <button class="btn btn-primary" id="sendReplyBtn"><i class="fas fa-paper-plane"></i> Send reply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT TICKET MODAL -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <h3><i class="fas fa-edit"></i> Edit ticket</h3>
+      <div class="field-group"><label><i class="fas fa-user"></i> Requester</label><input type="text" id="editRequester"></div>
+      <div class="field-group"><label><i class="fas fa-heading"></i> Subject</label><input type="text" id="editSubject"></div>
+      <div class="field-group"><label><i class="fas fa-align-left"></i> Description</label><textarea id="editDescription"></textarea></div>
+      <div class="field-group">
+        <label><i class="fas fa-flag"></i> Priority</label>
+        <select id="editPriority">
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-tag"></i> Status override</label>
+        <select id="editStatus">
+          <option value="open">Open</option>
+          <option value="pending">Pending</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="closeEditModalBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveEditBtn"><i class="fas fa-save"></i> Save changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASSIGN TICKET MODAL -->
+  <div class="modal-overlay" id="assignModal">
+    <div class="modal">
+      <h3><i class="fas fa-user-check"></i> Assign ticket</h3>
+      <div class="modal-ticket-info" id="assignTicketInfo"></div>
+      <div class="field-group">
+        <label><i class="fas fa-users"></i> Assign to</label>
+        <select id="assignSelect"><option value="">— Unassigned —</option></select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="closeAssignModalBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveAssignBtn"><i class="fas fa-check"></i> Assign</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD MODAL -->
+  <div class="modal-overlay" id="passwordModal">
+    <div class="modal">
+      <h3><i class="fas fa-key"></i> Change password</h3>
+      <div class="field-group"><label><i class="fas fa-user"></i> Account</label><input type="text" id="pwdUser" readonly></div>
+      <div class="field-group"><label><i class="fas fa-lock"></i> Current password</label><input type="password" id="pwdCurrent" placeholder="Enter current password"></div>
+      <div class="field-group"><label><i class="fas fa-lock"></i> New password</label><input type="password" id="pwdNew" placeholder="At least 6 characters"></div>
+      <div class="field-group"><label><i class="fas fa-lock"></i> Confirm new password</label><input type="password" id="pwdConfirm" placeholder="Re-enter new password"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="closePwdModalBtn">Cancel</button>
+        <button class="btn btn-primary" id="savePwdBtn"><i class="fas fa-save"></i> Update password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE USER MODAL -->
+  <div class="modal-overlay" id="createUserModal">
+    <div class="modal">
+      <h3><i class="fas fa-user-plus"></i> Create user</h3>
+      <div class="field-group"><label><i class="fas fa-user"></i> Username</label><input type="text" id="newUsername" placeholder="e.g. tech4"></div>
+      <div class="field-group"><label><i class="fas fa-id-badge"></i> Full name</label><input type="text" id="newFullName" placeholder="e.g. Jordan Lee"></div>
+      <div class="field-group">
+        <label><i class="fas fa-user-tag"></i> Role</label>
+        <select id="newRole">
+          <option value="tech1">Tech 1</option>
+          <option value="tech2">Tech 2</option>
+          <option value="tech3">Tech 3</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="field-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="newPassword" placeholder="At least 6 characters"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="closeUserModalBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveUserBtn"><i class="fas fa-user-plus"></i> Create user</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANAGE USERS MODAL -->
+  <div class="modal-overlay" id="manageUsersModal">
+    <div class="modal" style="max-width: 700px;">
+      <h3><i class="fas fa-users-gear"></i> Manage users</h3>
+      <div style="max-height: 380px; overflow-y: auto;">
+        <table class="user-table">
+          <thead>
+            <tr><th>Name</th><th>Username</th><th>Role</th><th>Password</th><th>Reset</th></tr>
+          </thead>
+          <tbody id="userTableBody"></tbody>
+        </table>
+      </div>
+      <button class="reset-all-btn" id="resetAllPasswordsBtn"><i class="fas fa-rotate-left"></i> Reset ALL passwords to default</button>
+      <div class="modal-actions"><button class="btn btn-secondary" id="closeManageUsersBtn">Close</button></div>
+    </div>
+  </div>
+
+  <!-- RESET PASSWORD RESULT MODAL -->
+  <div class="modal-overlay" id="resetResultModal">
+    <div class="modal">
+      <h3><i class="fas fa-key"></i> Password reset</h3>
+      <div class="modal-ticket-info" id="resetResultInfo" style="font-size: 0.85rem;"></div>
+      <div class="modal-actions"><button class="btn btn-primary" id="closeResetResultBtn">OK</button></div>
+    </div>
+  </div>
+
+  <!-- REPORT CENTER MODAL -->
+  <div class="modal-overlay" id="reportCenterModal">
+    <div class="modal modal-wide">
+      <h3><i class="fas fa-chart-column"></i> Report center</h3>
+      <div class="report-tab-row">
+        <button class="report-tab active" id="tabMonthly" data-period="monthly"><i class="fas fa-calendar-days"></i> Monthly</button>
+        <button class="report-tab" id="tabAnnual" data-period="annual"><i class="fas fa-calendar"></i> Annual</button>
+      </div>
+      <div class="report-config-row">
+        <div class="field-group" id="monthConfig">
+          <label><i class="fas fa-calendar-days"></i> Month</label>
+          <select id="reportMonth"></select>
+        </div>
+        <div class="field-group" id="yearConfig" style="display: none;">
+          <label><i class="fas fa-calendar"></i> Year</label>
+          <select id="reportYear"></select>
+        </div>
+        <div class="field-group">
+          <label><i class="fas fa-user-tag"></i> Role scope</label>
+          <select id="reportScope">
+            <option value="all">All tickets</option>
+            <option value="admin">Created by admin</option>
+            <option value="tech">Created by techs</option>
+          </select>
+        </div>
+      </div>
+      <div class="report-summary-grid" id="reportSummaryGrid"></div>
+      <div class="report-table-wrap">
+        <table class="report-table" id="reportTable">
+          <thead>
+            <tr>
+              <th>Ticket</th><th>Subject</th><th>Requester</th><th>Priority</th>
+              <th>Status</th><th>Assigned</th><th>Created</th><th>Resolved</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody"></tbody>
+        </table>
+      </div>
+      <div class="modal-actions" style="flex-wrap: wrap;">
+        <button class="btn btn-secondary" id="closeReportCenterBtn">Close</button>
+        <button class="btn btn-primary" id="printCurrentReportBtn"><i class="fas fa-print"></i> Print report</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-print" id="reportPrint"></div>
+  <div id="toast" class="toast-msg">Action completed</div>
+
+  <script>
+    (function() {
+      const TENURE_MINUTES = 5;
+      const STORAGE_KEY_TICKETS = 'it_support_tickets_v2';
+      const STORAGE_KEY_SESSION = 'it_support_session_v2';
+      const STORAGE_KEY_USERS = 'it_support_users_v2';
+
+      const DEFAULT_USERS = {
+        'admin:admin123': { id: 'admin-001', username: 'admin', name: 'Morgan Blake', role: 'admin', roleLabel: 'Admin', initials: 'MB', password: 'admin123' },
+        'tech1:tech123': { id: 'tech-001', username: 'tech1', name: 'Alex Rivera', role: 'tech', roleLabel: 'Tech 1', initials: 'AR', password: 'tech123' },
+        'tech2:tech123': { id: 'tech-002', username: 'tech2', name: 'Priya Sharma', role: 'tech', roleLabel: 'Tech 2', initials: 'PS', password: 'tech123' },
+        'tech3:tech123': { id: 'tech-003', username: 'tech3', name: 'Jamal Okoye', role: 'tech', roleLabel: 'Tech 3', initials: 'JO', password: 'tech123' }
+      };
+
+      function loadUsers() {
+        try { const s = localStorage.getItem(STORAGE_KEY_USERS); if (s) return JSON.parse(s); } catch (e) {}
+        return JSON.parse(JSON.stringify(DEFAULT_USERS));
+      }
+      function saveUsers() { try { localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(USERS)); } catch (e) {} }
+      let USERS = loadUsers();
+
+      function loadTickets() {
+        try { const s = localStorage.getItem(STORAGE_KEY_TICKETS); if (s) { const p = JSON.parse(s); if (Array.isArray(p)) return p; } } catch (e) {}
+        return [];
+      }
+      function saveTickets() { try { localStorage.setItem(STORAGE_KEY_TICKETS, JSON.stringify(tickets)); } catch (e) {} }
+
+      let currentUser = null;
+      let tickets = loadTickets();
+      let filterStatus = 'all';
+      let filterPriority = 'all';
+      let searchQuery = '';
+      let replyingToId = null;
+      let editingTicketId = null;
+      let assigningTicketId = null;
+      let reportPeriod = 'monthly';
+      let tenureTimer = null;
+
+      // DOM refs
+      const loginView = document.getElementById('loginView');
+      const dashboardView = document.getElementById('dashboardView');
+      const loginForm = document.getElementById('loginForm');
+      const loginRole = document.getElementById('loginRole');
+      const loginUsername = document.getElementById('loginUsername');
+      const loginPassword = document.getElementById('loginPassword');
+      const loginError = document.getElementById('loginError');
+      const loginErrorText = document.getElementById('loginErrorText');
+
+      const form = document.getElementById('ticketForm');
+      const requesterInput = document.getElementById('requester');
+      const subjectInput = document.getElementById('subject');
+      const descriptionInput = document.getElementById('description');
+      const prioritySelect = document.getElementById('priority');
+      const resetBtn = document.getElementById('resetBtn');
+      const ticketsContainer = document.getElementById('ticketsContainer');
+
+      const currentUserName = document.getElementById('currentUserName');
+      const currentUserRole = document.getElementById('currentUserRole');
+
+      const totalCountSpan = document.getElementById('totalCount');
+      const resolvedCountSpan = document.getElementById('resolvedCount');
+      const openCountSpan = document.getElementById('openCount');
+      const pendingCountSpan = document.getElementById('pendingCount');
+      const assignedCountSpan = document.getElementById('assignedCount');
+      const visibleCountSpan = document.getElementById('visibleCount');
+
+      const adminTotalSpan = document.getElementById('adminTotal');
+      const adminOpenSpan = document.getElementById('adminOpen');
+      const adminPendingSpan = document.getElementById('adminPending');
+      const adminResolvedSpan = document.getElementById('adminResolved');
+      const adminAssignedSpan = document.getElementById('adminAssigned');
+      const adminHighSpan = document.getElementById('adminHigh');
+      const adminUserCountSpan = document.getElementById('adminUserCount');
+
+      // Dashboard elements
+      const dashOpen = document.getElementById('dashOpen');
+      const dashPending = document.getElementById('dashPending');
+      const dashHigh = document.getElementById('dashHigh');
+      const dashResolved = document.getElementById('dashResolved');
+      const dashBreakdown = document.getElementById('dashBreakdown');
+      const dashPriorityBreakdown = document.getElementById('dashPriorityBreakdown');
+      const dashTechLoad = document.getElementById('dashTechLoad');
+      const dashActivity = document.getElementById('dashActivity');
+      const refreshDashboardBtn = document.getElementById('refreshDashboardBtn');
+      const dashGoReportsBtn = document.getElementById('dashGoReportsBtn');
+
+      const filterStatusSelect = document.getElementById('filterStatus');
+      const searchInput = document.getElementById('searchInput');
+      const filterPrioritySelect = document.getElementById('filterPriority');
+      const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+      const resolveAllBtn = document.getElementById('resolveAllOpen');
+      const deleteResolvedBtn = document.getElementById('deleteResolved');
+      const reportCenterBtn = document.getElementById('reportCenterBtn');
+      const printReportBtn = document.getElementById('printReportBtn');
+      const printReportBtn2 = document.getElementById('printReportBtn2');
+      const changePasswordBtn = document.getElementById('changePasswordBtn');
+      const createUserBtn = document.getElementById('createUserBtn');
+      const manageUsersBtn = document.getElementById('manageUsersBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      const supportPanel = document.getElementById('supportPanel');
+      const adminPanel = document.getElementById('adminPanel');
+      const agentNameDisplay = document.getElementById('agentNameDisplay');
+      const agentAvatar = document.getElementById('agentAvatar');
+      const queueCountSpan = document.getElementById('queueCount');
+      const myCountSpan = document.getElementById('myCount');
+      const queueListDiv = document.getElementById('queueList');
+      const myTicketsListDiv = document.getElementById('myTicketsList');
+
+      const replyModal = document.getElementById('replyModal');
+      const replyTicketInfo = document.getElementById('replyTicketInfo');
+      const replyMessage = document.getElementById('replyMessage');
+      const closeReplyModalBtn = document.getElementById('closeReplyModalBtn');
+      const sendReplyBtn = document.getElementById('sendReplyBtn');
+
+      const editModal = document.getElementById('editModal');
+      const editRequester = document.getElementById('editRequester');
+      const editSubject = document.getElementById('editSubject');
+      const editDescription = document.getElementById('editDescription');
+      const editPriority = document.getElementById('editPriority');
+      const editStatus = document.getElementById('editStatus');
+      const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+      const saveEditBtn = document.getElementById('saveEditBtn');
+
+      const assignModal = document.getElementById('assignModal');
+      const assignTicketInfo = document.getElementById('assignTicketInfo');
+      const assignSelect = document.getElementById('assignSelect');
+      const closeAssignModalBtn = document.getElementById('closeAssignModalBtn');
+      const saveAssignBtn = document.getElementById('saveAssignBtn');
+
+      const passwordModal = document.getElementById('passwordModal');
+      const pwdUser = document.getElementById('pwdUser');
+      const pwdCurrent = document.getElementById('pwdCurrent');
+      const pwdNew = document.getElementById('pwdNew');
+      const pwdConfirm = document.getElementById('pwdConfirm');
+      const closePwdModalBtn = document.getElementById('closePwdModalBtn');
+      const savePwdBtn = document.getElementById('savePwdBtn');
+
+      const createUserModal = document.getElementById('createUserModal');
+      const newUsername = document.getElementById('newUsername');
+      const newFullName = document.getElementById('newFullName');
+      const newRole = document.getElementById('newRole');
+      const newPassword = document.getElementById('newPassword');
+      const closeUserModalBtn = document.getElementById('closeUserModalBtn');
+      const saveUserBtn = document.getElementById('saveUserBtn');
+
+      const manageUsersModal = document.getElementById('manageUsersModal');
+      const userTableBody = document.getElementById('userTableBody');
+      const closeManageUsersBtn = document.getElementById('closeManageUsersBtn');
+      const resetAllPasswordsBtn = document.getElementById('resetAllPasswordsBtn');
+
+      const resetResultModal = document.getElementById('resetResultModal');
+      const resetResultInfo = document.getElementById('resetResultInfo');
+      const closeResetResultBtn = document.getElementById('closeResetResultBtn');
+
+      const reportCenterModal = document.getElementById('reportCenterModal');
+      const tabMonthly = document.getElementById('tabMonthly');
+      const tabAnnual = document.getElementById('tabAnnual');
+      const monthConfig = document.getElementById('monthConfig');
+      const yearConfig = document.getElementById('yearConfig');
+      const reportMonth = document.getElementById('reportMonth');
+      const reportYear = document.getElementById('reportYear');
+      const reportScope = document.getElementById('reportScope');
+      const reportSummaryGrid = document.getElementById('reportSummaryGrid');
+      const reportTableBody = document.getElementById('reportTableBody');
+      const closeReportCenterBtn = document.getElementById('closeReportCenterBtn');
+      const printCurrentReportBtn = document.getElementById('printCurrentReportBtn');
+
+      const reportPrint = document.getElementById('reportPrint');
+      const toastEl = document.getElementById('toast');
+
+      // helpers
+      function generateId() { return Date.now() + '-' + Math.random().toString(36).substring(2, 8); }
+      function formatDate(iso) {
+        const d = new Date(iso);
+        return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      }
+      function formatDateShort(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+      function getPriorityClass(p) {
+        if (p === 'High') return 'priority-high';
+        if (p === 'Medium') return 'priority-medium';
+        return 'priority-low';
+      }
+      function getTicketStatus(t) {
+        if (t.resolved) return 'resolved';
+        if (t.assignedTo) return 'assigned';
+        const mins = (Date.now() - new Date(t.createdAt).getTime()) / 60000;
+        if (mins >= TENURE_MINUTES) return 'pending';
+        return 'open';
+      }
+      function getStatusLabel(s) {
+        if (s === 'resolved') return 'Resolved';
+        if (s === 'assigned') return 'Assigned';
+        if (s === 'pending') return 'Pending';
+        return 'Open';
+      }
+      function getStatusClass(s) {
+        if (s === 'resolved') return 'status-resolved';
+        if (s === 'assigned') return 'status-assigned';
+        if (s === 'pending') return 'status-pending';
+        return 'status-open';
+      }
+      function getTenureMinutes(t) {
+        if (t.resolved || t.assignedTo) return null;
+        return Math.floor((Date.now() - new Date(t.createdAt).getTime()) / 60000);
+      }
+      function showToast(msg, isErr = false) {
+        toastEl.textContent = msg;
+        toastEl.style.background = isErr ? '#b13b2e' : '#0b2b4a';
+        toastEl.classList.add('show');
+        setTimeout(() => toastEl.classList.remove('show'), 2500);
+      }
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+      function showLoginError(msg) { loginErrorText.textContent = msg; loginError.classList.add('visible'); }
+      function hideLoginError() { loginError.classList.remove('visible'); }
+      function getTechUsers() { return Object.values(USERS).filter(u => u.role === 'tech'); }
+
+      // tenure
+      function checkTenureAndUpdate() {
+        let changed = false;
+        tickets.forEach(t => {
+          if (!t.resolved && !t.assignedTo) {
+            const mins = getTenureMinutes(t);
+            if (mins >= TENURE_MINUTES && !t.pendingNotified) {
+              t.pendingNotified = true;
+              t.pendingAt = new Date().toISOString();
+              changed = true;
+            }
+          }
+        });
+        if (changed) { saveTickets(); refreshUI(); }
+      }
+      function startTenureTimer() {
+        if (tenureTimer) clearInterval(tenureTimer);
+        tenureTimer = setInterval(checkTenureAndUpdate, 15000);
+      }
+      function stopTenureTimer() { if (tenureTimer) clearInterval(tenureTimer); tenureTimer = null; }
+
+      // LOGIN
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        hideLoginError();
+        const role = loginRole.value;
+        const username = loginUsername.value.trim();
+        const password = loginPassword.value.trim();
+        if (!role) { showLoginError('Please select a role.'); return; }
+        if (!username || !password) { showLoginError('Please enter both username and password.'); return; }
+        const key = `${username.toLowerCase()}:${password}`;
+        const user = USERS[key];
+        if (!user) { showLoginError('Invalid username or password.'); return; }
+        const roleMatch =
+          (role === 'admin' && user.role === 'admin') ||
+          (role === 'tech1' && user.roleLabel === 'Tech 1') ||
+          (role === 'tech2' && user.roleLabel === 'Tech 2') ||
+          (role === 'tech3' && user.roleLabel === 'Tech 3');
+        if (!roleMatch) { showLoginError(`This account does not have the "${role}" role.`); return; }
+        currentUser = user;
+        try { localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(user)); } catch (e) {}
+        loginView.style.display = 'none';
+        dashboardView.classList.add('active');
+        applyRoleView();
+        seedDemoDataIfEmpty();
+        refreshUI();
+        startTenureTimer();
+        showToast(`Welcome, ${user.name}!`);
+      });
+
+      function applyRoleView() {
+        if (!currentUser) return;
+        currentUserName.textContent = currentUser.name;
+        currentUserRole.textContent = currentUser.roleLabel;
+        if (currentUser.role === 'admin') {
+          dashboardView.classList.add('admin-mode');
+          supportPanel.style.display = 'none';
+          adminPanel.style.display = 'flex';
+        } else {
+          dashboardView.classList.remove('admin-mode');
+          supportPanel.style.display = 'flex';
+          adminPanel.style.display = 'none';
+          agentNameDisplay.textContent = currentUser.name;
+          agentAvatar.textContent = currentUser.initials;
+        }
+      }
+
+      logoutBtn.addEventListener('click', () => {
+        currentUser = null;
+        try { localStorage.removeItem(STORAGE_KEY_SESSION); } catch (e) {}
+        dashboardView.classList.remove('active', 'admin-mode');
+        loginView.style.display = 'flex';
+        loginForm.reset();
+        hideLoginError();
+        closeAllModals();
+        stopTenureTimer();
+        showToast('Logged out');
+      });
+
+      // FILTERS
+      function getFilteredTickets() {
+        if (!currentUser) return [];
+        return tickets.filter(t => {
+          const st = getTicketStatus(t);
+          if (filterStatus === 'open' && st !== 'open') return false;
+          if (filterStatus === 'pending' && st !== 'pending') return false;
+          if (filterStatus === 'resolved' && st !== 'resolved') return false;
+          if (filterStatus === 'assigned' && st !== 'assigned') return false;
+          if (filterStatus === 'unassigned' && t.assignedTo) return false;
+          if (filterPriority !== 'all' && t.priority !== filterPriority) return false;
+          if (searchQuery.trim() !== '') {
+            const q = searchQuery.trim().toLowerCase();
+            return t.subject.toLowerCase().includes(q) || t.requester.toLowerCase().includes(q) ||
+                   t.id.toLowerCase().includes(q) || t.description.toLowerCase().includes(q);
+          }
+          return true;
+        });
+      }
+
+      // RENDER MAIN
+      function refreshUI() {
+        if (!currentUser) return;
+        const total = tickets.length;
+        const resolved = tickets.filter(t => t.resolved).length;
+        const assigned = tickets.filter(t => t.assignedTo && !t.resolved).length;
+        const pending = tickets.filter(t => getTicketStatus(t) === 'pending').length;
+        const open = tickets.filter(t => getTicketStatus(t) === 'open').length;
+        const high = tickets.filter(t => t.priority === 'High' && !t.resolved).length;
+
+        totalCountSpan.textContent = total;
+        resolvedCountSpan.textContent = resolved;
+        openCountSpan.textContent = open;
+        pendingCountSpan.textContent = pending;
+        assignedCountSpan.textContent = assigned;
+
+        adminTotalSpan.textContent = total;
+        adminOpenSpan.textContent = open;
+        adminPendingSpan.textContent = pending;
+        adminResolvedSpan.textContent = resolved;
+        adminAssignedSpan.textContent = assigned;
+        adminHighSpan.textContent = high;
+        adminUserCountSpan.textContent = Object.keys(USERS).length;
+
+        renderMainTicketList();
+        if (currentUser.role === 'tech') renderAgentPanels();
+        if (currentUser.role === 'admin') renderDashboard();
+      }
+
+      function renderMainTicketList() {
+        const filtered = getFilteredTickets();
+        visibleCountSpan.textContent = `${filtered.length} shown`;
+        if (filtered.length === 0) {
+          ticketsContainer.innerHTML = `<div class="empty-msg"><i class="fas fa-inbox" style="font-size:1.5rem;margin-bottom:0.3rem;display:block;opacity:0.6;"></i>No tickets match the current filters.</div>`;
+          return;
+        }
+        let html = '';
+        filtered.forEach(t => {
+          const st = getTicketStatus(t);
+          const stLabel = getStatusLabel(st);
+          const stClass = getStatusClass(st);
+          const resolvedClass = st === 'resolved' ? 'resolved' : '';
+          const pendingClass = st === 'pending' ? 'pending' : '';
+          const resolvedTag = t.resolved ? '<span class="resolved-tag"><i class="fas fa-check-circle"></i> resolved</span>' : '';
+          const assignedTag = t.assignedTo ? `<span class="assigned-tag"><i class="fas fa-user-check"></i> ${escapeHtml(t.assignedTo.name.split(' ')[0])}</span>` : '';
+          const tenureMin = getTenureMinutes(t);
+          const tenureInfo = (tenureMin !== null && tenureMin >= 1) ? `<span class="tenurity-info"><i class="fas fa-hourglass-half"></i> ${tenureMin} min</span>` : '';
+
+          let actionButtons = '';
+          const isAdmin = currentUser.role === 'admin';
+          const isAssignedToMe = t.assignedTo && t.assignedTo.id === currentUser.id;
+          const isUnassigned = !t.assignedTo;
+
+          if (!t.resolved) {
+            if (isAdmin) {
+              actionButtons += `
+                <button class="btn-icon reply" data-action="reply" data-id="${t.id}" title="Reply"><i class="fas fa-reply"></i></button>
+                <button class="btn-icon assign" data-action="assign" data-id="${t.id}" title="Assign"><i class="fas fa-user-check"></i></button>
+                <button class="btn-icon edit" data-action="edit" data-id="${t.id}" title="Edit"><i class="fas fa-edit"></i></button>
+                <button class="btn-icon resolve" data-action="resolve" data-id="${t.id}" title="Resolve"><i class="fas fa-check-circle"></i></button>
+              `;
+            } else if (currentUser.role === 'tech') {
+              if (isUnassigned) {
+                actionButtons += `<button class="btn-icon grab" data-action="grab" data-id="${t.id}" title="Grab ticket"><i class="fas fa-hand-paper"></i></button>`;
+              } else if (isAssignedToMe) {
+                actionButtons += `
+                  <button class="btn-icon reply" data-action="reply" data-id="${t.id}" title="Reply"><i class="fas fa-reply"></i></button>
+                  <button class="btn-icon resolve" data-action="resolve" data-id="${t.id}" title="Resolve"><i class="fas fa-check-circle"></i></button>
+                `;
+              }
+            }
+          }
+          if (isAdmin || (currentUser.role === 'tech' && isAssignedToMe)) {
+            actionButtons += `<button class="btn-icon delete" data-action="delete" data-id="${t.id}" title="Delete"><i class="fas fa-trash-alt"></i></button>`;
+          }
+
+          html += `
+            <div class="ticket-item ${resolvedClass} ${pendingClass}" data-id="${t.id}">
+              <div class="ticket-info">
+                <div class="ticket-subject">
+                  ${escapeHtml(t.subject)}
+                  <span class="priority-tag ${getPriorityClass(t.priority)}">${t.priority}</span>
+                  <span class="status-tag ${stClass}">${stLabel}</span>
+                  ${tenureInfo}${resolvedTag}${assignedTag}
+                </div>
+                <div class="ticket-meta">
+                  <span><i class="fas fa-user"></i> ${escapeHtml(t.requester)}</span>
+                  <span><i class="fas fa-calendar-alt"></i> ${formatDate(t.createdAt)}</span>
+                  <span><i class="fas fa-hashtag"></i> ${t.id.slice(-6)}</span>
+                  ${t.replies && t.replies.length ? `<span><i class="fas fa-comment"></i> ${t.replies.length}</span>` : ''}
+                </div>
+                <div style="font-size:0.75rem;color:#3a5e7a;margin-top:0.15rem;">
+                  ${escapeHtml(t.description.length > 90 ? t.description.substring(0, 90) + '…' : t.description)}
+                </div>
+              </div>
+              <div class="ticket-actions">${actionButtons}</div>
+            </div>
+          `;
+        });
+        ticketsContainer.innerHTML = html;
+      }
+
+      function renderAgentPanels() {
+        if (!currentUser || currentUser.role !== 'tech') return;
+        const unassigned = tickets.filter(t => !t.resolved && !t.assignedTo);
+        queueCountSpan.textContent = unassigned.length;
+        if (unassigned.length === 0) {
+          queueListDiv.innerHTML = `<div class="empty-msg" style="padding:1rem;font-size:0.75rem;">No unassigned tickets.</div>`;
+        } else {
+          let qHtml = '';
+          unassigned.forEach(t => {
+            const st = getTicketStatus(t);
+            const pendingClass = st === 'pending' ? 'pending' : '';
+            const tenureMin = getTenureMinutes(t);
+            const tenureLabel = (tenureMin !== null && tenureMin >= 1) ? `<span class="tenurity-info" style="font-size:0.6rem;"><i class="fas fa-hourglass-half"></i> ${tenureMin}m</span>` : '';
+            qHtml += `
+              <div class="queue-item ${pendingClass}" data-id="${t.id}">
+                <div class="q-subject">
+                  <span>${escapeHtml(t.subject.length > 30 ? t.subject.substring(0, 30) + '…' : t.subject)}</span>
+                  <span class="priority-tag ${getPriorityClass(t.priority)}" style="font-size:0.55rem;">${t.priority}</span>
+                </div>
+                <div class="q-meta">
+                  <span><i class="fas fa-user"></i> ${escapeHtml(t.requester.split('@')[0])}</span>
+                  <span><i class="fas fa-clock"></i> ${formatDate(t.createdAt)}</span>
+                  ${tenureLabel}
+                </div>
+                <button class="assign-btn grab" data-action="grab" data-id="${t.id}"><i class="fas fa-hand-paper"></i> Grab ticket</button>
+              </div>
+            `;
+          });
+          queueListDiv.innerHTML = qHtml;
+        }
+        const myTickets = tickets.filter(t => t.assignedTo && t.assignedTo.id === currentUser.id && !t.resolved);
+        myCountSpan.textContent = myTickets.length;
+        if (myTickets.length === 0) {
+          myTicketsListDiv.innerHTML = `<div class="empty-msg" style="padding:1rem;font-size:0.75rem;">No active tickets assigned to you.</div>`;
+        } else {
+          let myHtml = '';
+          myTickets.forEach(t => {
+            myHtml += `
+              <div class="queue-item" data-id="${t.id}" style="border-left:3px solid #2a6f97;">
+                <div class="q-subject">
+                  <span>${escapeHtml(t.subject.length > 30 ? t.subject.substring(0, 30) + '…' : t.subject)}</span>
+                  <span class="priority-tag ${getPriorityClass(t.priority)}" style="font-size:0.55rem;">${t.priority}</span>
+                </div>
+                <div class="q-meta">
+                  <span><i class="fas fa-user"></i> ${escapeHtml(t.requester.split('@')[0])}</span>
+                  <span><i class="fas fa-clock"></i> ${formatDate(t.createdAt)}</span>
+                </div>
+                <div style="display:flex;gap:0.3rem;margin-top:0.2rem;">
+                  <button class="assign-btn" data-action="reply" data-id="${t.id}" style="background:#eef3f9;"><i class="fas fa-reply"></i> Reply</button>
+                  <button class="assign-btn" data-action="resolve" data-id="${t.id}" style="background:#e4f2e9;color:#1e6e4b;border-color:#b9dfcb;"><i class="fas fa-check-circle"></i> Resolve</button>
+                </div>
+              </div>
+            `;
+          });
+          myTicketsListDiv.innerHTML = myHtml;
+        }
+      }
+
+      // ================= DASHBOARD RENDER (admin) =================
+      function renderDashboard() {
+        if (!currentUser || currentUser.role !== 'admin') return;
+
+        const total = tickets.length;
+        const open = tickets.filter(t => getTicketStatus(t) === 'open').length;
+        const pending = tickets.filter(t => getTicketStatus(t) === 'pending').length;
+        const resolved = tickets.filter(t => t.resolved).length;
+        const assigned = tickets.filter(t => t.assignedTo && !t.resolved).length;
+        const high = tickets.filter(t => t.priority === 'High' && !t.resolved).length;
+        const unassigned = tickets.filter(t => !t.resolved && !t.assignedTo).length;
+
+        // Top cards
+        dashOpen.textContent = open;
+        dashPending.textContent = pending;
+        dashHigh.textContent = high;
+        dashResolved.textContent = resolved;
+
+        // Status breakdown with bars
+        const statuses = [
+          { label: 'Open', count: open, color: '#2a6f97', icon: 'fa-spinner' },
+          { label: 'Pending', count: pending, color: '#d4a017', icon: 'fa-clock' },
+          { label: 'Assigned', count: assigned, color: '#4b2e8c', icon: 'fa-user-check' },
+          { label: 'Resolved', count: resolved, color: '#1e6e4b', icon: 'fa-circle-check' }
+        ];
+        let statusHtml = '';
+        statuses.forEach(s => {
+          const pct = total > 0 ? Math.round((s.count / total) * 100) : 0;
+          statusHtml += `
+            <div class="dash-breakdown-row">
+              <span><i class="fas ${s.icon}"></i> ${s.label}</span>
+              <span class="bcount">${s.count}</span>
+            </div>
+            <div class="dash-bar"><span style="width:${pct}%; background:${s.color};"></span></div>
+          `;
+        });
+        dashBreakdown.innerHTML = statusHtml;
+
+        // Priority breakdown
+        const priorities = [
+          { label: 'High', count: tickets.filter(t => t.priority === 'High').length, color: '#b13b2e', icon: 'fa-flag' },
+          { label: 'Medium', count: tickets.filter(t => t.priority === 'Medium').length, color: '#a96618', icon: 'fa-flag' },
+          { label: 'Low', count: tickets.filter(t => t.priority === 'Low').length, color: '#1e6e4b', icon: 'fa-flag' }
+        ];
+        let priorityHtml = '';
+        priorities.forEach(p => {
+          const pct = total > 0 ? Math.round((p.count / total) * 100) : 0;
+          priorityHtml += `
+            <div class="dash-breakdown-row">
+              <span><i class="fas ${p.icon}"></i> ${p.label} priority</span>
+              <span class="bcount">${p.count}</span>
+            </div>
+            <div class="dash-bar"><span style="width:${pct}%; background:${p.color};"></span></div>
+          `;
+        });
+        dashPriorityBreakdown.innerHTML = priorityHtml;
+
+        // Technician load
+        const techs = getTechUsers();
+        let techHtml = '';
+        if (techs.length === 0) {
+          techHtml = `<div class="dash-breakdown-row"><span>No technicians</span><span class="bcount">0</span></div>`;
+        } else {
+          techs.forEach(tech => {
+            const cnt = tickets.filter(t => t.assignedTo && t.assignedTo.id === tech.id && !t.resolved).length;
+            techHtml += `
+              <div class="dash-breakdown-row">
+                <span><i class="fas fa-user-tie"></i> ${escapeHtml(tech.name)} (${tech.roleLabel})</span>
+                <span class="bcount">${cnt} active</span>
+              </div>
+            `;
+          });
+          techHtml += `
+            <div class="dash-breakdown-row">
+              <span><i class="fas fa-inbox"></i> Unassigned</span>
+              <span class="bcount">${unassigned}</span>
+            </div>
+          `;
+        }
+        dashTechLoad.innerHTML = techHtml;
+
+        // Recent activity (last 8 tickets sorted by created)
+        const recent = [...tickets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8);
+        let activityHtml = '';
+        if (recent.length === 0) {
+          activityHtml = `<div class="dash-activity-item"><i class="fas fa-info-circle"></i> No recent activity</div>`;
+        } else {
+          recent.forEach(t => {
+            let icon = 'fa-ticket-alt';
+            let text = `#${t.id.slice(-6)} created · ${escapeHtml(t.subject.length > 25 ? t.subject.substring(0, 25) + '…' : t.subject)}`;
+            if (t.resolved) { icon = 'fa-check-circle'; }
+            else if (t.assignedTo) { icon = 'fa-user-check'; }
+            activityHtml += `
+              <div class="dash-activity-item">
+                <i class="fas ${icon}"></i>
+                <span>${text}</span>
+                <span class="act-time">${formatDate(t.createdAt)}</span>
+              </div>
+            `;
+          });
+        }
+        dashActivity.innerHTML = activityHtml;
+      }
+
+      refreshDashboardBtn.addEventListener('click', () => {
+        renderDashboard();
+        showToast('Dashboard refreshed');
+      });
+
+      dashGoReportsBtn.addEventListener('click', () => {
+        // Switch to reports tab
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-category').forEach(c => c.classList.remove('active'));
+        document.querySelector('.admin-tab[data-tab="reports"]').classList.add('active');
+        document.getElementById('cat-reports').classList.add('active');
+        // Open report center immediately
+        populateReportSelectors();
+        reportPeriod = 'monthly';
+        updateReportTabs();
+        generateReportPreview();
+        reportCenterModal.classList.add('active');
+      });
+
+      // EVENT DELEGATION
+      ticketsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-icon');
+        if (!btn) return;
+        handleTicketAction(btn.dataset.action, btn.dataset.id);
+      });
+      queueListDiv.addEventListener('click', (e) => {
+        const btn = e.target.closest('.assign-btn');
+        if (!btn) return;
+        if (btn.dataset.action === 'grab' && currentUser) {
+          const t = tickets.find(x => x.id === btn.dataset.id);
+          if (t && !t.assignedTo && !t.resolved) {
+            t.assignedTo = { id: currentUser.id, name: currentUser.name, email: '' };
+            t.pendingNotified = false;
+            saveTickets(); refreshUI();
+            showToast(`You grabbed ticket "${t.subject}"`);
+          }
+        }
+      });
+      myTicketsListDiv.addEventListener('click', (e) => {
+        const btn = e.target.closest('.assign-btn');
+        if (!btn) return;
+        if (btn.dataset.action === 'reply') openReplyModal(btn.dataset.id);
+        else if (btn.dataset.action === 'resolve') handleTicketAction('resolve', btn.dataset.id);
+      });
+
+      function handleTicketAction(action, id) {
+        if (!currentUser) return;
+        const t = tickets.find(x => x.id === id);
+        if (!t) return;
+        const isAdmin = currentUser.role === 'admin';
+        const isAssignedTech = t.assignedTo && t.assignedTo.id === currentUser.id;
+        const isUnassigned = !t.assignedTo;
+
+        if (action === 'delete') {
+          if (isAdmin || isAssignedTech) {
+            if (confirm(`Delete ticket "${t.subject}"?`)) {
+              tickets = tickets.filter(x => x.id !== id);
+              saveTickets(); refreshUI();
+              showToast('Ticket deleted');
+            }
+          } else showToast('No permission to delete.', true);
+        } else if (action === 'resolve') {
+          if (isAdmin || isAssignedTech) {
+            t.resolved = true;
+            if (!t.resolvedAt) t.resolvedAt = new Date().toISOString();
+            saveTickets(); refreshUI();
+            showToast(`Ticket "${t.subject}" resolved`);
+          } else showToast('Can only resolve assigned tickets.', true);
+        } else if (action === 'reply') {
+          if (isAdmin || isAssignedTech) openReplyModal(id);
+          else showToast('Can only reply to assigned tickets.', true);
+        } else if (action === 'edit') {
+          if (isAdmin) openEditModal(id);
+          else showToast('Only admins can edit.', true);
+        } else if (action === 'assign') {
+          if (isAdmin) openAssignModal(id);
+          else showToast('Only admins can assign.', true);
+        } else if (action === 'grab') {
+          if (currentUser.role === 'tech' && isUnassigned && !t.resolved) {
+            t.assignedTo = { id: currentUser.id, name: currentUser.name, email: '' };
+            t.pendingNotified = false;
+            saveTickets(); refreshUI();
+            showToast(`You grabbed ticket "${t.subject}"`);
+          } else if (currentUser.role === 'tech' && !isUnassigned) showToast('Already assigned.', true);
+          else if (currentUser.role === 'tech' && t.resolved) showToast('Cannot grab a resolved ticket.', true);
+          else showToast('Only techs can grab tickets.', true);
+        }
+      }
+
+      // MODALS
+      function closeAllModals() {
+        [replyModal, editModal, assignModal, passwordModal, createUserModal, manageUsersModal, resetResultModal, reportCenterModal].forEach(m => m.classList.remove('active'));
+        replyingToId = null; editingTicketId = null; assigningTicketId = null;
+      }
+
+      function openReplyModal(id) {
+        const t = tickets.find(x => x.id === id);
+        if (!t || !currentUser) return;
+        replyingToId = id;
+        replyTicketInfo.innerHTML = `<strong>#${t.id.slice(-6)}</strong> · ${escapeHtml(t.subject)}<br><span style="color:#4b6f8c;">From: ${escapeHtml(t.requester)}</span>${t.assignedTo ? `<br><span style="color:#4b2e8c;">Assigned to: ${escapeHtml(t.assignedTo.name)}</span>` : ''}`;
+        replyMessage.value = '';
+        replyModal.classList.add('active');
+        replyMessage.focus();
+      }
+      closeReplyModalBtn.addEventListener('click', () => replyModal.classList.remove('active'));
+      replyModal.addEventListener('click', (e) => { if (e.target === replyModal) replyModal.classList.remove('active'); });
+      sendReplyBtn.addEventListener('click', () => {
+        if (!replyingToId || !currentUser) return;
+        const msg = replyMessage.value.trim();
+        if (!msg) { showToast('Please enter a reply message', true); return; }
+        const t = tickets.find(x => x.id === replyingToId);
+        if (t) {
+          if (!t.replies) t.replies = [];
+          t.replies.push({ id: generateId(), from: currentUser.name, message: msg, createdAt: new Date().toISOString() });
+          saveTickets(); refreshUI();
+          showToast(`Reply sent for ticket #${t.id.slice(-6)}`);
+        }
+        replyModal.classList.remove('active'); replyingToId = null;
+      });
+
+      function openEditModal(id) {
+        const t = tickets.find(x => x.id === id);
+        if (!t) return;
+        editingTicketId = id;
+        editRequester.value = t.requester;
+        editSubject.value = t.subject;
+        editDescription.value = t.description;
+        editPriority.value = t.priority;
+        const st = getTicketStatus(t);
+        editStatus.value = st === 'resolved' ? 'resolved' : (st === 'pending' ? 'pending' : 'open');
+        editModal.classList.add('active');
+      }
+      closeEditModalBtn.addEventListener('click', () => editModal.classList.remove('active'));
+      editModal.addEventListener('click', (e) => { if (e.target === editModal) editModal.classList.remove('active'); });
+      saveEditBtn.addEventListener('click', () => {
+        if (!editingTicketId) return;
+        const req = editRequester.value.trim();
+        const subj = editSubject.value.trim();
+        const desc = editDescription.value.trim();
+        if (!req || !subj || !desc) { showToast('All fields required.', true); return; }
+        const t = tickets.find(x => x.id === editingTicketId);
+        if (t) {
+          t.requester = req; t.subject = subj; t.description = desc; t.priority = editPriority.value;
+          const ns = editStatus.value;
+          if (ns === 'resolved') { t.resolved = true; if (!t.resolvedAt) t.resolvedAt = new Date().toISOString(); }
+          else { t.resolved = false; if (ns === 'pending') t.pendingNotified = true; else if (ns === 'open') t.pendingNotified = false; }
+          saveTickets(); refreshUI();
+          showToast('Ticket updated');
+        }
+        editModal.classList.remove('active'); editingTicketId = null;
+      });
+
+      function openAssignModal(id) {
+        const t = tickets.find(x => x.id === id);
+        if (!t) return;
+        assigningTicketId = id;
+        assignTicketInfo.innerHTML = `<strong>#${t.id.slice(-6)}</strong> · ${escapeHtml(t.subject)}<br><span style="color:#4b6f8c;">Current: ${t.assignedTo ? escapeHtml(t.assignedTo.name) : 'Unassigned'}</span>`;
+        assignSelect.innerHTML = '<option value="">— Unassigned —</option>';
+        getTechUsers().forEach(tech => {
+          const opt = document.createElement('option');
+          opt.value = tech.id;
+          opt.textContent = `${tech.name} (${tech.roleLabel})`;
+          if (t.assignedTo && t.assignedTo.id === tech.id) opt.selected = true;
+          assignSelect.appendChild(opt);
+        });
+        assignModal.classList.add('active');
+      }
+      closeAssignModalBtn.addEventListener('click', () => assignModal.classList.remove('active'));
+      assignModal.addEventListener('click', (e) => { if (e.target === assignModal) assignModal.classList.remove('active'); });
+      saveAssignBtn.addEventListener('click', () => {
+        if (!assigningTicketId) return;
+        const t = tickets.find(x => x.id === assigningTicketId);
+        if (!t) return;
+        const techId = assignSelect.value;
+        if (!techId) { t.assignedTo = null; t.pendingNotified = false; }
+        else {
+          const tech = Object.values(USERS).find(u => u.id === techId);
+          if (tech) { t.assignedTo = { id: tech.id, name: tech.name, email: '' }; t.pendingNotified = false; }
+        }
+        saveTickets(); refreshUI();
+        showToast('Assignment updated');
+        assignModal.classList.remove('active'); assigningTicketId = null;
+      });
+
+      changePasswordBtn.addEventListener('click', () => {
+        if (!currentUser) return;
+        pwdUser.value = `${currentUser.name} (${currentUser.username})`;
+        pwdCurrent.value = ''; pwdNew.value = ''; pwdConfirm.value = '';
+        passwordModal.classList.add('active'); pwdCurrent.focus();
+      });
+      closePwdModalBtn.addEventListener('click', () => passwordModal.classList.remove('active'));
+      passwordModal.addEventListener('click', (e) => { if (e.target === passwordModal) passwordModal.classList.remove('active'); });
+      savePwdBtn.addEventListener('click', () => {
+        if (!currentUser) return;
+        const cur = pwdCurrent.value.trim();
+        const nw = pwdNew.value.trim();
+        const cf = pwdConfirm.value.trim();
+        if (cur !== currentUser.password) { showToast('Current password incorrect.', true); return; }
+        if (nw.length < 6) { showToast('New password must be at least 6 characters.', true); return; }
+        if (nw !== cf) { showToast('New passwords do not match.', true); return; }
+        const oldKey = `${currentUser.username}:${currentUser.password}`;
+        delete USERS[oldKey];
+        currentUser.password = nw;
+        USERS[`${currentUser.username}:${nw}`] = currentUser;
+        saveUsers();
+        try { localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser)); } catch (e) {}
+        showToast('Password updated successfully');
+        passwordModal.classList.remove('active');
+      });
+
+      createUserBtn.addEventListener('click', () => {
+        if (!currentUser) return;
+        newUsername.value = ''; newFullName.value = ''; newRole.value = 'tech1'; newPassword.value = '';
+        createUserModal.classList.add('active'); newUsername.focus();
+      });
+      closeUserModalBtn.addEventListener('click', () => createUserModal.classList.remove('active'));
+      createUserModal.addEventListener('click', (e) => { if (e.target === createUserModal) createUserModal.classList.remove('active'); });
+      saveUserBtn.addEventListener('click', () => {
+        const un = newUsername.value.trim();
+        const fn = newFullName.value.trim();
+        const rv = newRole.value;
+        const pw = newPassword.value.trim();
+        if (!un || !fn || !pw) { showToast('Please fill in all fields.', true); return; }
+        if (pw.length < 6) { showToast('Password must be at least 6 characters.', true); return; }
+        if (Object.values(USERS).some(u => u.username === un)) { showToast('Username already exists.', true); return; }
+        const roleMap = {
+          tech1: { role: 'tech', roleLabel: 'Tech 1' },
+          tech2: { role: 'tech', roleLabel: 'Tech 2' },
+          tech3: { role: 'tech', roleLabel: 'Tech 3' },
+          admin: { role: 'admin', roleLabel: 'Admin' }
+        };
+        const rm = roleMap[rv];
+        const initials = fn.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+        const newUser = { id: `${rm.role}-${Date.now()}`, username: un, name: fn, role: rm.role, roleLabel: rm.roleLabel, initials, password: pw };
+        USERS[`${un}:${pw}`] = newUser;
+        saveUsers(); refreshUI();
+        showToast(`User "${un}" created as ${rm.roleLabel}`);
+        createUserModal.classList.remove('active');
+      });
+
+      manageUsersBtn.addEventListener('click', () => {
+        renderUserTable();
+        manageUsersModal.classList.add('active');
+      });
+      closeManageUsersBtn.addEventListener('click', () => manageUsersModal.classList.remove('active'));
+      manageUsersModal.addEventListener('click', (e) => { if (e.target === manageUsersModal) manageUsersModal.classList.remove('active'); });
+
+      function renderUserTable() {
+        let rows = '';
+        Object.values(USERS).forEach(u => {
+          rows += `<tr>
+            <td>${escapeHtml(u.name)}</td>
+            <td>${escapeHtml(u.username)}</td>
+            <td><span class="role-pill">${escapeHtml(u.roleLabel)}</span></td>
+            <td style="font-family: monospace; color: #4b6f8c;">${escapeHtml(u.password)}</td>
+            <td><button class="reset-btn" data-username="${escapeHtml(u.username)}"><i class="fas fa-key"></i> Reset</button></td>
+          </tr>`;
+        });
+        userTableBody.innerHTML = rows;
+        userTableBody.querySelectorAll('.reset-btn').forEach(btn => {
+          btn.addEventListener('click', () => resetUserPassword(btn.dataset.username));
+        });
+      }
+
+      function resetUserPassword(username) {
+        const user = Object.values(USERS).find(u => u.username === username);
+        if (!user) return;
+        const newPwd = prompt(`Enter new password for ${user.name} (${username}):`, '');
+        if (newPwd === null) return;
+        if (newPwd.trim().length < 6) { showToast('Password must be at least 6 characters.', true); return; }
+        const oldKey = `${user.username}:${user.password}`;
+        delete USERS[oldKey];
+        user.password = newPwd.trim();
+        USERS[`${user.username}:${user.password}`] = user;
+        if (currentUser && currentUser.id === user.id) {
+          currentUser.password = user.password;
+          try { localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser)); } catch (e) {}
+        }
+        saveUsers(); renderUserTable();
+        showToast(`Password reset for ${user.name}`);
+        resetResultInfo.innerHTML = `<strong>${escapeHtml(user.name)}</strong> (${escapeHtml(user.username)})<br>New password: <span style="font-family:monospace;font-size:1rem;color:#0b2b4a;">${escapeHtml(user.password)}</span>`;
+        resetResultModal.classList.add('active');
+      }
+
+      resetAllPasswordsBtn.addEventListener('click', () => {
+        if (!confirm('Reset ALL user passwords to defaults?')) return;
+        const results = [];
+        Object.values(USERS).forEach(u => {
+          const oldKey = `${u.username}:${u.password}`;
+          delete USERS[oldKey];
+          let def = 'tech123';
+          if (u.role === 'admin') def = 'admin123';
+          u.password = def;
+          USERS[`${u.username}:${u.password}`] = u;
+          results.push(`<li><strong>${escapeHtml(u.name)}</strong> (${escapeHtml(u.username)}) → <code>${escapeHtml(def)}</code></li>`);
+        });
+        if (currentUser) {
+          const updated = USERS[`${currentUser.username}:${currentUser.password}`];
+          if (updated) { currentUser.password = updated.password; try { localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser)); } catch (e) {} }
+        }
+        saveUsers(); renderUserTable();
+        showToast('All passwords reset to defaults');
+        resetResultInfo.innerHTML = `<p style="margin-bottom:0.5rem;">All passwords reset:</p><ul style="padding-left:1.2rem;line-height:1.7;">${results.join('')}</ul>`;
+        resetResultModal.classList.add('active');
+      });
+      closeResetResultBtn.addEventListener('click', () => resetResultModal.classList.remove('active'));
+      resetResultModal.addEventListener('click', (e) => { if (e.target === resetResultModal) resetResultModal.classList.remove('active'); });
+
+      // REPORT CENTER
+      function populateReportSelectors() {
+        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        reportMonth.innerHTML = '';
+        months.forEach((m, i) => {
+          const opt = document.createElement('option');
+          opt.value = i; opt.textContent = m;
+          reportMonth.appendChild(opt);
+        });
+        const cy = new Date().getFullYear();
+        reportYear.innerHTML = '';
+        for (let y = cy - 5; y <= cy + 1; y++) {
+          const opt = document.createElement('option');
+          opt.value = y; opt.textContent = y;
+          if (y === cy) opt.selected = true;
+          reportYear.appendChild(opt);
+        }
+        reportMonth.value = new Date().getMonth();
+        reportYear.value = cy;
+      }
+
+      reportCenterBtn.addEventListener('click', () => {
+        populateReportSelectors();
+        reportPeriod = 'monthly';
+        updateReportTabs();
+        generateReportPreview();
+        reportCenterModal.classList.add('active');
+      });
+      closeReportCenterBtn.addEventListener('click', () => reportCenterModal.classList.remove('active'));
+      reportCenterModal.addEventListener('click', (e) => { if (e.target === reportCenterModal) reportCenterModal.classList.remove('active'); });
+
+      tabMonthly.addEventListener('click', () => { reportPeriod = 'monthly'; updateReportTabs(); generateReportPreview(); });
+      tabAnnual.addEventListener('click', () => { reportPeriod = 'annual'; updateReportTabs(); generateReportPreview(); });
+
+      function updateReportTabs() {
+        if (reportPeriod === 'monthly') {
+          tabMonthly.classList.add('active'); tabAnnual.classList.remove('active');
+          monthConfig.style.display = 'flex'; yearConfig.style.display = 'none';
+        } else {
+          tabAnnual.classList.add('active'); tabMonthly.classList.remove('active');
+          monthConfig.style.display = 'none'; yearConfig.style.display = 'flex';
+        }
+      }
+
+      reportMonth.addEventListener('change', generateReportPreview);
+      reportYear.addEventListener('change', generateReportPreview);
+      reportScope.addEventListener('change', generateReportPreview);
+
+      function filterTicketsForReport() {
+        const scope = reportScope.value;
+        const year = parseInt(reportYear.value, 10);
+        const month = parseInt(reportMonth.value, 10);
+        return tickets.filter(t => {
+          const c = new Date(t.createdAt);
+          if (reportPeriod === 'monthly') {
+            if (c.getFullYear() !== year || c.getMonth() !== month) return false;
+          } else {
+            if (c.getFullYear() !== year) return false;
+          }
+          if (scope === 'admin') {
+            if (t.creatorRole && t.creatorRole !== 'admin') return false;
+            if (!t.creatorRole && !t.requester.toLowerCase().includes('admin')) return false;
+          } else if (scope === 'tech') {
+            if (t.creatorRole && t.creatorRole !== 'tech') return false;
+            if (!t.creatorRole && !t.requester.toLowerCase().includes('tech')) return false;
+          }
+          return true;
+        });
+      }
+
+      function generateReportPreview() {
+        const f = filterTicketsForReport();
+        const total = f.length;
+        const resolved = f.filter(t => t.resolved).length;
+        const pending = f.filter(t => getTicketStatus(t) === 'pending').length;
+        const open = f.filter(t => getTicketStatus(t) === 'open').length;
+        const assigned = f.filter(t => t.assignedTo && !t.resolved).length;
+        const high = f.filter(t => t.priority === 'High').length;
+
+        reportSummaryGrid.innerHTML = `
+          <div class="report-summary-card"><span class="rsc-label">Total</span><span class="rsc-value">${total}</span></div>
+          <div class="report-summary-card"><span class="rsc-label">Open</span><span class="rsc-value">${open}</span></div>
+          <div class="report-summary-card"><span class="rsc-label">Pending</span><span class="rsc-value">${pending}</span></div>
+          <div class="report-summary-card"><span class="rsc-label">Resolved</span><span class="rsc-value">${resolved}</span></div>
+          <div class="report-summary-card"><span class="rsc-label">Assigned</span><span class="rsc-value">${assigned}</span></div>
+          <div class="report-summary-card"><span class="rsc-label">High priority</span><span class="rsc-value">${high}</span></div>
+        `;
+
+        if (f.length === 0) {
+          reportTableBody.innerHTML = `<tr><td colspan="8" class="report-empty">No tickets found for this period.</td></tr>`;
+          return;
+        }
+        let rows = '';
+        f.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(t => {
+          rows += `<tr>
+            <td>#${t.id.slice(-6)}</td>
+            <td>${escapeHtml(t.subject.length > 40 ? t.subject.substring(0, 40) + '…' : t.subject)}</td>
+            <td>${escapeHtml(t.requester)}</td>
+            <td>${t.priority}</td>
+            <td>${getStatusLabel(getTicketStatus(t))}</td>
+            <td>${t.assignedTo ? escapeHtml(t.assignedTo.name) : '—'}</td>
+            <td>${formatDateShort(t.createdAt)}</td>
+            <td>${t.resolvedAt ? formatDateShort(t.resolvedAt) : '—'}</td>
+          </tr>`;
+        });
+        reportTableBody.innerHTML = rows;
+      }
+
+      printCurrentReportBtn.addEventListener('click', () => {
+        generatePrintableReport();
+        setTimeout(() => window.print(), 100);
+      });
+
+      function generatePrintableReport() {
+        const f = filterTicketsForReport();
+        const total = f.length;
+        const resolved = f.filter(t => t.resolved).length;
+        const pending = f.filter(t => getTicketStatus(t) === 'pending').length;
+        const open = f.filter(t => getTicketStatus(t) === 'open').length;
+        const assigned = f.filter(t => t.assignedTo && !t.resolved).length;
+        const high = f.filter(t => t.priority === 'High').length;
+
+        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        let periodLabel;
+        if (reportPeriod === 'monthly') periodLabel = `${months[parseInt(reportMonth.value, 10)]} ${reportYear.value}`;
+        else periodLabel = `Year ${reportYear.value}`;
+        const scopeLabel = reportScope.options[reportScope.selectedIndex].text;
+
+        let rows = '';
+        f.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(t => {
+          rows += `<tr>
+            <td>#${t.id.slice(-6)}</td>
+            <td>${escapeHtml(t.subject)}</td>
+            <td>${escapeHtml(t.requester)}</td>
+            <td>${t.priority}</td>
+            <td>${getStatusLabel(getTicketStatus(t))}</td>
+            <td>${t.assignedTo ? escapeHtml(t.assignedTo.name) : '—'}</td>
+            <td>${formatDateShort(t.createdAt)}</td>
+            <td>${t.resolvedAt ? formatDateShort(t.resolvedAt) : '—'}</td>
+          </tr>`;
+        });
+        if (f.length === 0) rows = `<tr><td colspan="8" style="text-align:center;color:#888;">No tickets found.</td></tr>`;
+
+        reportPrint.innerHTML = `
+          <h1>i.tsupport — ${reportPeriod === 'monthly' ? 'Monthly' : 'Annual'} report</h1>
+          <div class="report-meta">Period: ${periodLabel} · Scope: ${scopeLabel}<br>Generated: ${new Date().toLocaleString()} · By: ${currentUser.name} (Admin)</div>
+          <h2>Summary</h2>
+          <ul class="summary-list">
+            <li>Total tickets: <strong>${total}</strong></li>
+            <li>Open: <strong>${open}</strong></li>
+            <li>Pending: <strong>${pending}</strong></li>
+            <li>Resolved: <strong>${resolved}</strong></li>
+            <li>Assigned (unresolved): <strong>${assigned}</strong></li>
+            <li>High priority: <strong>${high}</strong></li>
+          </ul>
+          <h2>Ticket details</h2>
+          <table>
+            <thead><tr><th>ID</th><th>Subject</th><th>Requester</th><th>Priority</th><th>Status</th><th>Assigned</th><th>Created</th><th>Resolved</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      }
+
+      function printAllTickets() {
+        const now = new Date();
+        const total = tickets.length;
+        const resolved = tickets.filter(t => t.resolved).length;
+        const pending = tickets.filter(t => getTicketStatus(t) === 'pending').length;
+        const open = tickets.filter(t => getTicketStatus(t) === 'open').length;
+        const assigned = tickets.filter(t => t.assignedTo && !t.resolved).length;
+        const high = tickets.filter(t => t.priority === 'High').length;
+
+        let rows = '';
+        tickets.forEach(t => {
+          rows += `<tr>
+            <td>#${t.id.slice(-6)}</td>
+            <td>${escapeHtml(t.subject)}</td>
+            <td>${escapeHtml(t.requester)}</td>
+            <td>${t.priority}</td>
+            <td>${t.assignedTo ? escapeHtml(t.assignedTo.name) : 'Unassigned'}</td>
+            <td>${getStatusLabel(getTicketStatus(t))}</td>
+            <td>${formatDate(t.createdAt)}</td>
+          </tr>`;
+        });
+
+        reportPrint.innerHTML = `
+          <h1>i.tsupport — All tickets report</h1>
+          <div class="report-meta">Generated: ${now.toLocaleString()} · By: ${currentUser.name} (Admin)<br>Total: ${total} · Open: ${open} · Pending: ${pending} · Resolved: ${resolved} · Assigned: ${assigned} · High priority: ${high}</div>
+          <table>
+            <thead><tr><th>ID</th><th>Subject</th><th>Requester</th><th>Priority</th><th>Assigned</th><th>Status</th><th>Created</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+        setTimeout(() => window.print(), 100);
+      }
+
+      printReportBtn.addEventListener('click', printAllTickets);
+      printReportBtn2.addEventListener('click', printAllTickets);
+
+      // FILTER LISTENERS
+      filterStatusSelect.addEventListener('change', (e) => { filterStatus = e.target.value; refreshUI(); });
+      filterPrioritySelect.addEventListener('change', (e) => { filterPriority = e.target.value; refreshUI(); });
+      searchInput.addEventListener('input', (e) => { searchQuery = e.target.value; refreshUI(); });
+      clearFiltersBtn.addEventListener('click', () => {
+        filterStatus = 'all'; filterPriority = 'all'; searchQuery = '';
+        filterStatusSelect.value = 'all';
+        filterPrioritySelect.value = 'all';
+        searchInput.value = '';
+        refreshUI();
+        showToast('Filters cleared');
+      });
+
+      // BULK ACTIONS
+      resolveAllBtn.addEventListener('click', () => {
+        if (!currentUser || currentUser.role !== 'admin') return;
+        const openTickets = tickets.filter(t => !t.resolved);
+        if (openTickets.length === 0) { showToast('No open tickets to resolve', true); return; }
+        openTickets.forEach(t => { t.resolved = true; if (!t.resolvedAt) t.resolvedAt = new Date().toISOString(); });
+        saveTickets(); refreshUI();
+        showToast(`${openTickets.length} ticket(s) resolved`);
+      });
+
+      deleteResolvedBtn.addEventListener('click', () => {
+        if (!currentUser || currentUser.role !== 'admin') return;
+        const cnt = tickets.filter(t => t.resolved).length;
+        if (cnt === 0) { showToast('No resolved tickets to delete', true); return; }
+        if (!confirm(`Delete ${cnt} resolved ticket(s)?`)) return;
+        tickets = tickets.filter(t => !t.resolved);
+        saveTickets(); refreshUI();
+        showToast(`${cnt} resolved ticket(s) removed`);
+      });
+
+      // CREATE TICKET
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        const req = requesterInput.value.trim();
+        const subj = subjectInput.value.trim();
+        const desc = descriptionInput.value.trim();
+        if (!req || !subj || !desc) { alert('Please fill in all required fields.'); return; }
+        tickets.push({
+          id: generateId(), requester: req, subject: subj, description: desc,
+          priority: prioritySelect.value, createdAt: new Date().toISOString(),
+          resolved: false, resolvedAt: null, assignedTo: null, replies: [],
+          pendingNotified: false, pendingAt: null, creatorRole: currentUser.role
+        });
+        saveTickets(); refreshUI();
+        form.reset(); prioritySelect.value = 'Medium'; requesterInput.focus();
+        showToast('Ticket created');
+      });
+      resetBtn.addEventListener('click', () => { form.reset(); prioritySelect.value = 'Medium'; requesterInput.focus(); });
+
+      // ADMIN TABS
+      document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.admin-category').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          const cat = document.getElementById('cat-' + tab.dataset.tab);
+          if (cat) cat.classList.add('active');
+          // Refresh dashboard when its tab is activated
+          if (tab.dataset.tab === 'dashboard') renderDashboard();
+        });
+      });
+
+      // SEED
+      function seedDemoDataIfEmpty() {
+        if (tickets.length > 0) return;
+        const now = new Date();
+        const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+        const earlier = new Date(now); earlier.setHours(now.getHours() - 3);
+        const veryOld = new Date(now); veryOld.setMinutes(now.getMinutes() - 12);
+        const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15, 10, 30, 0);
+        const prevMonth2 = new Date(now.getFullYear(), now.getMonth() - 1, 20, 14, 0, 0);
+        const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 10, 9, 0, 0);
+
+        tickets.push({ id: generateId(), requester: 'mike.chen@company.com', subject: 'VPN connection drops frequently',
+          description: 'VPN disconnects every 10-15 minutes. Already tried restarting the client.',
+          priority: 'High', createdAt: earlier.toISOString(), resolved: false, resolvedAt: null,
+          assignedTo: null, replies: [], pendingNotified: true, pendingAt: new Date().toISOString(), creatorRole: 'tech' });
+        tickets.push({ id: generateId(), requester: 'sarah.w@company.com', subject: 'Outlook calendar not syncing',
+          description: 'Calendar events not showing on mobile device. Webmail works fine.',
+          priority: 'Medium', createdAt: yesterday.toISOString(), resolved: false, resolvedAt: null,
+          assignedTo: { id: 'tech-001', name: 'Alex Rivera', email: '' }, replies: [], pendingNotified: false, pendingAt: null, creatorRole: 'admin' });
+        tickets.push({ id: generateId(), requester: 'alex.r@company.com', subject: 'Printer on 3rd floor jammed',
+          description: 'Paper jam error, tray 2. Cannot clear it.',
+          priority: 'Low', createdAt: prevMonth.toISOString(), resolved: true,
+          resolvedAt: new Date(prevMonth.getTime() + 2 * 3600 * 1000).toISOString(),
+          assignedTo: { id: 'tech-001', name: 'Alex Rivera', email: '' },
+          replies: [{ id: generateId(), from: 'Alex Rivera', message: 'Printer cleared and tested.', createdAt: new Date(prevMonth.getTime() + 3600 * 1000).toISOString() }],
+          pendingNotified: false, pendingAt: null, creatorRole: 'tech' });
+        tickets.push({ id: generateId(), requester: 'lisa.m@company.com', subject: 'MFA device not working',
+          description: 'Authenticator app codes failing. Locked out of email.',
+          priority: 'High', createdAt: veryOld.toISOString(), resolved: false, resolvedAt: null,
+          assignedTo: null, replies: [], pendingNotified: true, pendingAt: new Date().toISOString(), creatorRole: 'admin' });
+        tickets.push({ id: generateId(), requester: 'david.k@company.com', subject: 'Need access to shared drive',
+          description: 'Please grant access to the marketing shared drive.',
+          priority: 'Low', createdAt: new Date(now.setMinutes(now.getMinutes() - 2)).toISOString(),
+          resolved: false, resolvedAt: null, assignedTo: null, replies: [], pendingNotified: false, pendingAt: null, creatorRole: 'tech' });
+        tickets.push({ id: generateId(), requester: 'emma.j@company.com', subject: 'Laptop running slow after update',
+          description: 'Since the latest Windows update, the laptop is extremely slow.',
+          priority: 'Medium', createdAt: prevMonth2.toISOString(), resolved: true,
+          resolvedAt: new Date(prevMonth2.getTime() + 5 * 3600 * 1000).toISOString(),
+          assignedTo: { id: 'tech-002', name: 'Priya Sharma', email: '' },
+          replies: [], pendingNotified: false, pendingAt: null, creatorRole: 'admin' });
+        tickets.push({ id: generateId(), requester: 'james.p@company.com', subject: 'Email quota exceeded',
+          description: 'Cannot send or receive emails. Mailbox is full.',
+          priority: 'High', createdAt: twoMonthsAgo.toISOString(), resolved: true,
+          resolvedAt: new Date(twoMonthsAgo.getTime() + 1 * 3600 * 1000).toISOString(),
+          assignedTo: { id: 'tech-003', name: 'Jamal Okoye', email: '' },
+          replies: [], pendingNotified: false, pendingAt: null, creatorRole: 'tech' });
+        saveTickets();
+      }
+
+      // AUTO-RESTORE SESSION
+      function tryRestoreSession() {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY_SESSION);
+          if (!stored) return;
+          const session = JSON.parse(stored);
+          const user = Object.values(USERS).find(u => u.username === session.username);
+          if (!user) return;
+          currentUser = user;
+          loginView.style.display = 'none';
+          dashboardView.classList.add('active');
+          applyRoleView();
+          seedDemoDataIfEmpty();
+          refreshUI();
+          startTenureTimer();
+        } catch (e) {}
+      }
+
+      // INIT
+      seedDemoDataIfEmpty();
+      hideLoginError();
+      tryRestoreSession();
+    })();
+  </script>
+</body>
+</html>
